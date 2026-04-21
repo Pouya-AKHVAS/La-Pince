@@ -1,0 +1,9 @@
+services:
+  db:
+    
+  api:
+    context: ./apps/api
+    dockerfile: ../../docker/api.Dockerfile
+  client:
+    context: ./apps/client
+    dockerfile: ../../docker/client.Dockerfile
