@@ -10,7 +10,7 @@
     // See also https://aka.ms/tsconfig/module
     "module": "nodenext",
     "target": "ES2022", //Plus compatible et moins expérimentale que ESnext
-    "types": [],
+    "types": ["node"],
     // For nodejs:
     // "lib": ["esnext"],
     // "types": ["node"],
@@ -25,7 +25,7 @@
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
     "forceConsistentCasingInFileNames": true, // Éviter les problèmes de casing dans les noms de fichier
-    "rewriteRelativeImportExtensions": true,  // Autoriser les imports avec l'extension .ts
+    "rewriteRelativeImportExtensions": true, // Autoriser les imports avec l'extension .ts
 
     // Style Options
     // "noImplicitReturns": true,
@@ -40,9 +40,10 @@
     "jsx": "react-jsx",
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
-    "erasableSyntaxOnly": true,       // Utiliser uniquement la syntaxe supportées par Node.js (pas d'enum, décorateurs...)
+    "erasableSyntaxOnly": true, // Utiliser uniquement la syntaxe supportées par Node.js (pas d'enum, décorateurs...)
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
-    "skipLibCheck": true,
-  }
+    "skipLibCheck": true
+  },
+  "exclude": ["node_modules", "generated", "prisma", "prisma.config.ts"]
 }
