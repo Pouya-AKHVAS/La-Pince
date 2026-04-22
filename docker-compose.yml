@@ -47,3 +47,19 @@ services:
 
 volumes:
   postgres_data:
+
+  
+  studio:
+    image: node:20-slim
+    working_dir: /app 
+    volumes:
+      - .:/app # Monte le répertoire dans le conteneur
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: ${DATABASE_URL}
+    ports:
+      -"5555:5555" #Expose l'interface de Prisma Studio sur le port 5555
+    command: npx prisma studio
+    depends_on:
+      - db:
+          condition: service_healthy
