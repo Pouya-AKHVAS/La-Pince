@@ -10,6 +10,8 @@ WORKDIR /app
 # On copie le package.json dans le futur conteneur
 COPY package*.json ./
 
+# Docker était dépourvu d'OpenSSL et Prisma a émis un avertissement.
+# De plus, la compilation a été effectuée avant l'installation d'OpenSSL.
 RUN apt-get update -y && apt-get install -y openssl
 
 # On installe les dépendances de Node
@@ -24,7 +26,8 @@ COPY ./ ./
 
 
 # Générer le client prisma capable de se connecter à la BDD
-RUN npm run prisma:generate
+RUN npx prisma generate
+RUN npm run build
 
 # CMD npx prisma migrate deploy && npm run start
 
@@ -44,5 +47,5 @@ RUN npm run prisma:generate
 # CMD = commande qui sera lancé lorsqu'on génère le CONTENEUR à partir de l'image
 # Docker:start = lance les migrations (créé les tables) puis  lance l'app (node dist/index.js)
 # Cette commande "npm run docker:start" sera lancée lorsqu'on lance `docker run IMAGE`
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "docker:start"]
 
