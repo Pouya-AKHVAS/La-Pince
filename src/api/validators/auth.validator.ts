@@ -12,3 +12,7 @@ export const registerSchema = z.object({
     .regex(/[@$!%*?&]/, "Le mot de passe doit contenir au moins un caractère spécial (@, $, !, %, *, ?, &)")
 });
 
+export const loginSchema = z.object({
+  email: z.email(),
+  password: z.string()
+})
