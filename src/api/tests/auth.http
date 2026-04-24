@@ -5,10 +5,10 @@ POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
 {
-  "first_name": "Alice",
+  "first_name": "Pierre",
   "last_name": "Dupont",
-  "email": "alice@example.com",
-  "password": "motdepasse123",
+  "email": "pierre@example.com",
+  "password": "Pierre123!motdepasse",
   "photo": "url"
 }
 
