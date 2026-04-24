@@ -1,4 +1,4 @@
-import type { RegisterFormData } from '../../types/auth'
+import type { RegisterFormData, ApiError } from '../../types/auth'
 
 // On déclare une interface TypeScript qui décrit les "props" attendues par le composant.
 // Les props, c'est ce que le composant parent (RegisterPage) peut lui passer.
@@ -8,18 +8,18 @@ interface RegisterFormProps {
   // Si elle est fournie, c'est une FONCTION qui :
   //   - prend en paramètre "data" de type RegisterFormData (les 4 champs du formulaire)
   //   - ne retourne rien (void)
-  // Concrètement : quand l'utilisateur valide le formulaire,
-  // RegisterForm appellera cette fonction en lui passant les données saisies.
+  // Concrètement : quand l'utilisateur valide le formulaire, RegisterForm appellera cette fonction en lui passant les données saisies.
   onSubmit?: (data: RegisterFormData) => void
+  isLoading : boolean
+  error : ApiError | null
 
 }
 // On déclare le composant RegisterForm.
 // Entre les accolades { onSubmit }, on "destructure" les props :
 // au lieu d'écrire props.onSubmit partout dans le composant,
 // on extrait directement onSubmit depuis l'objet props.
-// ": RegisterFormProps" dit à TypeScript que les props
-// doivent respecter l'interface qu'on vient de définir au-dessus.
-export default function RegisterForm({ onSubmit}: RegisterFormProps) {
+// ": RegisterFormProps" dit à TypeScript que les props doivent respecter l'interface qu'on vient de définir au-dessus.
+export default function RegisterForm({ onSubmit }: RegisterFormProps) {
   return (
     <form onSubmit={(e) => {
       e.preventDefault();
