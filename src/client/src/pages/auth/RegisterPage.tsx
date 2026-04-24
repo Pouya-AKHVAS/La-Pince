@@ -26,6 +26,7 @@ const handleSubmit = async (data: RegisterFormData) => {
   } finally {
     setIsLoading(false);
   }
+}; 
 
   return (
     <main>
@@ -39,5 +40,5 @@ const handleSubmit = async (data: RegisterFormData) => {
         Déjà un compte ? <a href="/login">Se connecter</a>
       </p>
     </main>
-  )
-}}
+  );
+}
