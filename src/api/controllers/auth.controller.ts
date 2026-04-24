@@ -30,7 +30,7 @@ export async function register(req: Request, res: Response) {
   // 4. Créer l'utilisateur en base
 
   const user = await prisma.user.create({
-    data: { first_name, last_name, email, password: hashedPassword, photo },
+    data: { first_name, last_name, email, password: hashedPassword, photo: photo ?? null },
     select: {
       id: true,
       first_name: true,
