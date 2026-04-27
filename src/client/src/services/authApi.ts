@@ -53,3 +53,32 @@ export async function registerUser(formData: RegisterFormData): Promise<AuthUser
     const authResponse: AuthResponse = await response.json();
     return authResponse;
   }
+
+
+  export async function fetchCurrentUser(): Promise<AuthResponse['user']> {
+  const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/users`, {
+    method: "GET",
+    // INDISPENSABLE : c'est ce qui dit au navigateur d'envoyer le cookie caché au back-end
+    credentials: "include", 
+  });
+
+  if (!response.ok) {
+    throw new Error("Non authentifié ou session expirée");
+  }
+
+  // Le serveur renvoie juste l'objet utilisateur (plus de token !)
+  return response.json(); 
+}
+
+export async function fetchLogout(): Promise<void> {
+  const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/logout`, {
+    method: "POST",
+    credentials: "include", // Indispensable pour envoyer le cookie à détruire
+  });
+
+  if (!response.ok) {
+    console.error("Erreur lors de la déconnexion côté serveur");
+    // On ne jette pas d'erreur avec 'throw' ici, car on veut forcer 
+    // la déconnexion côté Front quoi qu'il arrive.
+  }
+}
