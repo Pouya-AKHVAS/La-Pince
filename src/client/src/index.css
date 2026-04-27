@@ -54,13 +54,12 @@ body {
 #root {
   width: 100%;
   min-height: 100vh;
-  display: flex;
+  display: block;
   flex-direction: column;
   box-sizing: border-box;
   /* On enlève le text-align center pour ne pas casser les inputs */
   text-align: left; 
-  align-items: center; 
-  justify-content: center;
+  
 }
 
 /* 5. TYPOGRAPHIE */
