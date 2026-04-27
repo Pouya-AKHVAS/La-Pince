@@ -1,6 +1,18 @@
 // fichier qui permet de faire les appels à l'API d'authentification
 import type { RegisterFormData, AuthUser, ApiError } from "../types/auth";
 
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface AuthResponse {
+  token : string; // Le token d'authentification (JWT) que le serveur renvoie en cas de connexion réussie. Ce token doit être stocké côté client (dans un cookie httpOnly) et envoyé avec les requêtes suivantes pour prouver que l'utilisateur est authentifié.
+  user : AuthUser; // L'utilisateur connecté, avec ses infos (id, prénom, nom, email) mais jamais le mot de passe. C'est ce que le serveur renvoie quand la connexion réussit.
+}
+
+
+
 // creation d'une fonction registerUser qui a pour rôle d'envoyer les données du formulaire à POST /auth/register et de retourner la réponse du serveur, qui peut être soit un AuthUser en cas de succès, soit un ApiError en cas d'erreur.
 export async function registerUser(formData: RegisterFormData): Promise<AuthUser | ApiError> {
     // On utilise fetch pour envoyer une requête POST à l'endpoint /auth/register avec les données du formulaire.
@@ -20,4 +32,24 @@ export async function registerUser(formData: RegisterFormData): Promise<AuthUser
     // Si tout va bien, on retourne l'utilisateur crée par le serveur, qui est de type AuthUser.
     const user: AuthUser = await response.json();
     return user;
+  }
+
+
+  // Création d'une fonction loginUser qui a pour rôle d'envoyer les données du formulaire de connexion à POST /auth/login et de retourner la réponse du serveur, 
+  // qui peut être soit un AuthResponse en cas de succès, soit un ApiError en cas d'erreur.
+  export async function loginUser(credentials: LoginCredentials): Promise<AuthResponse | ApiError> {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(credentials),// On convertit l'objet credentials en JSON pour l'envoyer au serveur.
+      credentials: "include", // Permet d'inclure les cookies dans la requête, ce qui est important pour l'authentification avec des JWT stockés en cookie.
+    })
+    if (!response.ok) {
+      const error: ApiError = await response.json();
+      throw error
+    }
+    const authResponse: AuthResponse = await response.json();
+    return authResponse;
   }
