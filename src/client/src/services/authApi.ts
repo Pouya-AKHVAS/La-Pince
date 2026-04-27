@@ -37,7 +37,7 @@ export async function registerUser(formData: RegisterFormData): Promise<AuthUser
 
   // Création d'une fonction loginUser qui a pour rôle d'envoyer les données du formulaire de connexion à POST /auth/login et de retourner la réponse du serveur, 
   // qui peut être soit un AuthResponse en cas de succès, soit un ApiError en cas d'erreur.
-  export async function loginUser(credentials: LoginCredentials): Promise<AuthResponse | ApiError> {
+  export async function loginUser(credentials: LoginCredentials): Promise<AuthResponse> {
     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/login`, {
       method: "POST",
       headers: {
