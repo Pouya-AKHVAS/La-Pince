@@ -112,7 +112,7 @@ export default function RegisterPage() {
 
       <img
         src="/WEBP/Desktop/Lapince-Logo-Desktop.webp"
-        className="hidden md:block absolute top-10 left-20 w-40 z-50"
+        className="hidden md:block absolute top-10 left-20 w-50 z-50"
         alt="Logo Lapince - version desktop"
       />
 
@@ -128,13 +128,12 @@ export default function RegisterPage() {
     text-[20px] md:text-[45px]
     !text-[#002b49]
     font-black 
-    italic 
     tracking-tighter 
     z-40
     top-[30px] md:top-[-10px]
   "
       >
-        Inscription
+        Inscription hahaha
       </h1>
 
       {/* ------------------------------ */}
@@ -144,7 +143,7 @@ export default function RegisterPage() {
         className="hidden md:block absolute top-[50%] left-[5%] z-40"
         aria-hidden="false"
       >
-        <p className="text-[25px] font-bold leading-tight">
+        <p className="text-[35px] font-bold leading-tight">
           Créez votre compte Gratuit,
           <br />
           sans connexion bancaire,
@@ -156,7 +155,7 @@ export default function RegisterPage() {
       {/* ------------------------------ */}
       {/*   Texte latéral (Mobile)       */}
       {/* ------------------------------ */}
-      <div className="block md:hidden absolute top-[18%] left-1/2 -translate-x-1/2 w-[90%] text-center z-40">
+      <div className="block md:hidden absolute top-[18%] left-1/2 -translate-x-1/2 w-[100] text-center z-40">
         <p className="text-[18px] font-bold italic leading-tight">
           Créez votre compte Gratuit,
           <br />
@@ -198,21 +197,15 @@ export default function RegisterPage() {
 
           {/* Cercle de photo */}
           <div
-            className="w-24 h-24 rounded-full border-2 border-white bg-white/30 backdrop-blur-md flex items-center justify-center shadow-xl overflow-hidden"
+            className="w-36 h-36 rounded-full bg-white/30 backdrop-blur-md flex items-center justify-center shadow-xl overflow-hidden"
             role="img"
             aria-label="Photo de profil"
           >
-            {photo ? (
-              <img
-                src={URL.createObjectURL(photo)}
-                alt="aperçu de la photo"
-                className="w-full h-full object-cover rounded-full"
-              />
-            ) : (
-              <span className="text-[10px] text-center font-black px-2 uppercase">
-                Ajouter une photo de profil
-              </span>
-            )}
+            <img
+              src={photo ? URL.createObjectURL(photo) : "/WEBP/Desktop/Lapince-Profil-Picture-Desktop.webp"}
+              alt={photo ? "aperçu de la photo" : "Photo de profil par défaut"}
+              className="w-full h-full object-cover rounded-full"
+            />
           </div>
 
           {/* Bouton + pour ouvrir le sélecteur de fichiers */}
@@ -251,18 +244,12 @@ export default function RegisterPage() {
           />
 
           {/* cecle photo*/}
-          <div className="w-26 h-26 rounded-full border-2 border-white bg-white/30 backdrop-blur-md flex items-center justify-center shadow-xl">
-            {photo ? (
-              <img
-                src={URL.createObjectURL(photo)}
-                alt="aperçu de la photo"
-                className="w-full h-full object-cover rounded-full"
-              />
-            ) : (
-              <span className="text-[9px] text-center font-black px-2 uppercase">
-                Photo de profil
-              </span>
-            )}
+          <div className="w-26 h-26 rounded-full bg-white/30 backdrop-blur-md flex items-center justify-center shadow-xl overflow-hidden">
+            <img
+              src={photo ? URL.createObjectURL(photo) : "/WEBP/Desktop/Lapince-Profil-Picture-Desktop.webp"}
+              alt={photo ? "aperçu de la photo" : "Photo de profil par défaut"}
+              className="w-full h-full object-cover rounded-full"
+            />
           </div>
 
           {/* button + */}
@@ -336,7 +323,7 @@ export default function RegisterPage() {
       {/* ------------------------------ */}
       <footer
         className="
-          hidden md:flex absolute bottom-0 left-0 w-full h-[25px] bg-white items-center justify-center z-50
+          hidden md:flex absolute bottom-0 left-0 w-full h-[50px] bg-white items-center justify-center z-50
         "
         role="contentinfo"
       >
