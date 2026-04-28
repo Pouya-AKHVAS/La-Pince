@@ -328,7 +328,7 @@ export default function RegisterPage() {
         role="contentinfo"
       >
         <p className="text-[10px] font-bold text-[#002b49] opacity-70">
-          Mentions légalessssssss
+          Mentions légales
         </p>
       </footer>
     </main>
