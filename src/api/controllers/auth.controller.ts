@@ -107,8 +107,8 @@ async function replaceRefreshTokenInDatabase(refreshToken: Token, user: User) {
     data: {
       token: refreshToken.token,
       userId: user.id,
-      issued_at: new Date(),
-      expires_at: new Date(new Date().getTime() + refreshToken.expiresIn),
+      createdAt: new Date(),
+      expiresAt: new Date(new Date().getTime() + refreshToken.expiresIn),
     },
   });
 }
@@ -130,4 +130,37 @@ function setRefreshTokenCookie(res: Response, refreshToken: Token) {
     maxAge: refreshToken.expiresIn,
     path: "/api/auth/refresh",
   });
+}
+
+export async function refresh(req: Request, res: Response) {
+  const refreshToken = req.cookies.refreshToken;
+
+  if (!refreshToken) {
+    throw new BadRequestError("Refresh token manquant");
+  }
+
+  //Vérifier que le refresh token existe en BDD et n'est pas expiré
+  const storedToken = await prisma.refreshToken.findUnique({
+    where: { token: refreshToken },
+    include: { user: true },
+  });
+
+  if (!storedToken || storedToken.expiresAt < new Date()) {
+    throw new UnauthorizedError("Refresh token invalide ou expiré");
+  }
+
+  const user = storedToken.user;
+
+  //Générer de nouveaux tokens
+  const newTokens = generateAuthTokens(user);
+
+  //Mettre à jour le refresh token en BDD (ancien token supprimé, nouveau token créé)
+  await replaceRefreshTokenInDatabase(newTokens.refreshToken, user);
+
+  //Mettre à jour les cookies
+  setAccessTokenCookie(res, newTokens.accessToken);
+  setRefreshTokenCookie(res, newTokens.refreshToken);
+
+  //Renvoyer les nouveaux tokens, le refresh token est dans le cookie, c'est plus sécurisé
+  res.json({ accessToken: newTokens.accessToken.token });
 }

@@ -5,9 +5,9 @@ POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
 {
-  "first_name": "Pierre",
+  "first_name": "Cynthia",
   "last_name": "Dupont",
-  "email": "pierre@example.com",
+  "email": "cynthia@example.com",
   "password": "Pierre123!motdepasse",
   "photo": "url"
 }
@@ -59,7 +59,7 @@ POST {{baseUrl}}/auth/login
 Content-Type: application/json  
 
 {
-  "email": "pierre@example.com",
+  "email": "cynthia@example.com",
   "password": "Pierre123!motdepasse"
 }
 
@@ -89,3 +89,18 @@ Content-Type: application/json
   "email": "pierre@example.com"
 }   
 
+### 10. Refresh token valide
+POST {{baseUrl}}/auth/refresh 
+Content-Type: application/json
+
+{
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjMsImVtYWlsIjoiY3ludGhpYUBleGFtcGxlLmNvbSIsImlhdCI6MTc3NzM2NjQ0NSwiZXhwIjoxNzc3OTcxMjQ1LCJhdWQiOiJyZWZyZXNoIn0.MUeAkZHCTv5RXKRCw8ib8gB2rSAqbuE7jP2aDpcCCjg"
+} 
+
+### 11. Refresh token invalide → 401
+POST {{baseUrl}}/auth/refresh
+Content-Type: application/json  
+
+{
+  "refresh_token": "tokenInvalide"
+}
