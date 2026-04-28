@@ -31,6 +31,7 @@ services:
       PORT: ${API_PORT}               # Port interne sur lequel l'API écoute
       JWT_SECRET: ${JWT_SECRET}       # Clé secrète pour signer les tokens JWT
       CORS_ORIGIN: ${CORS_ORIGIN}     # Origine autorisée pour les requêtes CORS
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS} # Liste des origines autorisées pour les requêtes CORS (séparées par des virgules)
     ports:
       - "${API_LOCAL_PORT}:${API_PORT}"  # Mappe le port local vers le port interne de l'API
     depends_on:
