@@ -2,7 +2,6 @@ import type { Request, Response, NextFunction } from "express";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import { ForbiddenError, UnauthorizedError } from "../lib/error.ts";
 import { config } from "../config.ts";
-import { User } from "../models/index.ts";
 
 export function authMiddleware(
   req: Request,
