@@ -1,0 +1,40 @@
+@baseUrl = http://localhost:3007
+
+### Récupérer toutes les catégories
+GET {{baseUrl}}/categories
+
+
+
+### Récupérer toutes les catégories par défaut
+GET {{baseUrl}}/categories?default=true
+
+### Récupérer les catégories d'un utilisateur
+GET {{baseUrl}}/categories?id_user=1
+
+### Récupérer une catégorie
+GET {{baseUrl}}/categories/1
+
+### Créer une catégorie
+POST {{baseUrl}}/categories
+Content-Type: application/json
+
+{
+  "name": "Transport",
+  "color": "#8B5CF6",
+  "icon": "car",
+  "type": "expense",
+  "is_default": false,
+  "id_user": 1
+}
+
+### Modifier une catégorie
+PATCH {{baseUrl}}/categories/1
+Content-Type: application/json
+
+{
+  "name": "Logement",
+  "color": "#3B82F6"
+}
+
+### Supprimer une catégorie
+DELETE {{baseUrl}}/categories/5
