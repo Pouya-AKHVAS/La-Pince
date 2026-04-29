@@ -1,36 +1,38 @@
-// On importe CategoryType généré automatiquement par Prisma
 import { PrismaClient, CategoryType } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 
-const prisma = new PrismaClient();
+
+const adapter = new PrismaPg(process.env.DATABASE_URL!);
+const prisma = new PrismaClient({ adapter });
+
 
 async function main() {
-  console.log('Début du seeding...');
+  console.log('🌱 Début du seeding catégories...');
 
-  // Utilisation de l'Enum CategoryType au lieu d'un texte simple
   const defaultCategories = [
-    { name: 'Salaire', type: CategoryType.income, color: '#10B981', icon: 'Banknote' },
-    { name: 'Alimentation', type: CategoryType.expense, color: '#F59E0B', icon: 'ShoppingCart' },
-    { name: 'Logement', type: CategoryType.expense, color: '#6366F1', icon: 'Home' }
+    { name: 'Salaire', type: CategoryType.INCOME, color: '#10B981', icon: 'Banknote' },
+    { name: 'Alimentation', type: CategoryType.EXPENSE, color: '#F59E0B', icon: 'ShoppingCart' },
+    { name: 'Logement', type: CategoryType.EXPENSE, color: '#6366F1', icon: 'Home' }
   ];
 
   for (const cat of defaultCategories) {
-    await prisma.category.upsert({
-      where: { name_id_user: { name: cat.name, id_user: 0 } },
-      update: {},
-      create: {
+    await prisma.category.create({
+      data: {
         name: cat.name,
         type: cat.type,
         color: cat.color,
         icon: cat.icon,
-        isdefault: true,
+        is_default: true,
       },
     });
   }
+
+  console.log('✅ Seeding terminé');
 }
 
 main()
   .catch((e) => {
-    console.error(e);
+    console.error('❌ Seed error:', e);
     process.exit(1);
   })
   .finally(async () => {

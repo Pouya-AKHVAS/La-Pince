@@ -3,11 +3,8 @@ import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import authRouter from "../routes/auth.routes.js";
-<<<<<<< HEAD
-import categoriesRouter from "../routes/category.routes.js"
-=======
-import userRouter from "../routes/user.routes.js"
->>>>>>> dev
+import userRouter from "../routes/user.routes.js";
+import categoryRouter from "../routes/category.routes.ts"
 
 // Créer une app Express
 const app = express();
@@ -28,12 +25,8 @@ app.use(cookieParser());
 
 
 app.use("/auth", authRouter);
-<<<<<<< HEAD
-app.use("/", categoriesRouter)
-=======
 app.use("/users", userRouter)
->>>>>>> dev
-
+app.use("/category", categoryRouter)
 app.get('/', (req, res) => {
     res.json("Hello")
 } )
