@@ -1,0 +1,46 @@
+@baseUrl = http://localhost:3007
+
+### 1. Récupérer un profil existant → 200
+GET {{baseUrl}}/users/1
+
+### 2. Utilisateur inexistant → 404
+GET {{baseUrl}}/users/9999
+
+### 3. Mise à jour du prénom → 200
+PATCH {{baseUrl}}/users/1
+Content-Type: application/json
+
+{
+  "first_name": "Jean-Pierre"
+}
+
+### 4. Mise à jour de l'email avec un email déjà pris → 409
+PATCH {{baseUrl}}/users/1
+Content-Type: application/json
+
+{
+  "email": "pierre@example.com"
+}
+
+### 5. Mot de passe invalide (pas de majuscule) → 400
+PATCH {{baseUrl}}/users/1
+Content-Type: application/json
+
+{
+  "password": "motdepasse123!"
+}
+
+### 6. Mise à jour du mot de passe valide → 200
+PATCH {{baseUrl}}/users/1
+Content-Type: application/json
+
+{
+  "password": "NouveauMdp123!"
+}
+
+### 7. Supprimer un compte → 200
+DELETE {{baseUrl}}/users/1
+
+### 8. Supprimer un compte inexistant → 404
+DELETE {{baseUrl}}/users/9999
+```
