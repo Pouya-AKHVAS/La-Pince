@@ -3,10 +3,7 @@
 // Par exemple, la fonction createTransaction pourrait recevoir les données d'une nouvelle transaction, vérifier que l'utilisateur a suffisamment de fonds, créer la transaction en base, mettre à jour le solde de l'utilisateur, etc.
 // En séparant la logique métier dans un service, on garde les contrôleurs propres et centrés sur la gestion des requêtes/réponses, ce qui facilite la maintenance et les tests.
 
-import * as PrismaPkg from "@prisma/client"; // On importe PrismaClient depuis le package @prisma/client. En utilisant "as any", on contourne les problèmes de types liés à l'importation dans un projet TypeScript avec module NodeNext. Cela permet d'éviter les erreurs de type lors de l'instanciation de PrismaClient, tout en conservant la possibilité d'utiliser les fonctionnalités de Prisma pour interagir avec la base de données.
-const { PrismaClient } = PrismaPkg as any;
-export const prisma = new PrismaClient(); // On crée une instance de PrismaClient pour interagir avec la base de données. En l'exportant, on peut la réutiliser dans d'autres fichiers du projet sans avoir à recréer une nouvelle instance à chaque fois,
-//  ce qui est plus performant et évite les problèmes de connexion.
+import { prisma } from "../lib/prisma.js";
 
 // --- 1. Récupérer toutes les transactions avec les filtres ---
 export const getAllTransactions = async (iduser: number, filters: any) => { // On reçoit l'id de l'utilisateur et les filtres (idcategory, startDate, endDate) depuis le contrôleur
