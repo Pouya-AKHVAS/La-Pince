@@ -24,7 +24,7 @@ export interface AuthResponse {
 
 
 // creation d'une fonction registerUser qui a pour rôle d'envoyer les données du formulaire à POST /auth/register et de retourner la réponse du serveur, qui peut être soit un AuthUser en cas de succès, soit un ApiError en cas d'erreur.
-export async function registerUser(formData: RegisterFormData): Promise<AuthUser | ApiError> {
+export async function registerUser(formData: RegisterFormData): Promise<AuthUser> {
     // On utilise fetch pour envoyer une requête POST à l'endpoint /auth/register avec les données du formulaire.
     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/register`, { // en production on utilise la variable d'environnement VITE_API_BASE_URL pour construire l'URL de l'API, ce qui permet de facilement changer l'URL de l'API sans avoir à modifier le code.
       method: "POST",
@@ -39,9 +39,9 @@ export async function registerUser(formData: RegisterFormData): Promise<AuthUser
       const error: ApiError = await response.json();
       throw error
     }
-    // Si tout va bien, on retourne l'utilisateur crée par le serveur, qui est de type AuthUser.
-    const user: AuthUser = await response.json();
-    return user;
+    // Si tout va bien, on retourne l'utilisateur crée par le serveur, qui est dans data.user.
+    const data = await response.json();
+    return data.user;
   }
 
 
@@ -92,9 +92,9 @@ export async function registerUser(formData: RegisterFormData): Promise<AuthUser
     throw new Error("Non authentifié ou session expirée");
   }
 
-  // Le serveur doit nous renvoyer l'objet User complet, pas juste un token, car les infos de l'utilisateur sont désormais récupérées via cette route grâce au cookie d'authentification. 
-  // Cela simplifie la gestion des tokens côté client et améliore la sécurité.
-  return response.json(); 
+  // Le serveur nous renvoie { user: { ... } }
+  const data = await response.json();
+  return data.user; 
 }
 
 export async function fetchLogout(): Promise<void> {
