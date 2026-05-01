@@ -1,13 +1,20 @@
 import { useState } from "react";
 import CategorySelect from "./CategorySelect";
 
-const CATEGORIES = ["Mensuel", "Hebdomadaire", "Annuel", "Ponctuel"];
+const CATEGORIES = [
+  "Alimentation",
+  "Transport",
+  "Logement",
+  "Santé",
+  "Loisirs",
+  "Vêtements",
+  "Autres",
+];
 
 export default function BudgetCard() {
   const [categorie, setCategorie] = useState("");
   const [montant, setMontant] = useState("");
-  const [du, setDu] = useState("");
-  const [au, setAu] = useState("");
+  const [mois, setMois] = useState("");
 
   return (
     <div className="relative w-44 h-44 md:w-56 md:h-56 rounded-full bg-[#E06B56] flex flex-col items-center justify-center gap-1 md:gap-2 shadow-xl shrink-0">
@@ -29,35 +36,26 @@ export default function BudgetCard() {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          console.log("Budget:", { categorie, montant, du, au });
+          console.log("Budget:", { categorie, montant, mois });
         }}
         className="flex flex-col items-center gap-1 w-full px-5 md:px-10"
       >
+        <div className="w-full flex items-center h-5 md:h-6 rounded-full bg-white/70 px-3 gap-1">
+          <input
+            type="number"
+            placeholder="Montant"
+            value={montant}
+            onChange={(e) => setMontant(e.target.value)}
+            className="flex-1 bg-transparent text-[9px] md:text-[10px] outline-none placeholder:text-gray-500 min-w-0"
+          />
+          <span className="text-[9px] md:text-[10px] text-gray-500 shrink-0">€</span>
+        </div>
         <input
-          type="number"
-          placeholder="Montant"
-          value={montant}
-          onChange={(e) => setMontant(e.target.value)}
-          className="w-full h-5 md:h-6 rounded-full bg-white/70 text-[9px] md:text-[10px] px-3 outline-none placeholder:text-gray-500"
+          type="month"
+          value={mois}
+          onChange={(e) => setMois(e.target.value)}
+          className="w-full h-5 md:h-6 rounded-full bg-white/70 text-[9px] md:text-[10px] px-3 outline-none text-gray-500"
         />
-        <div className="w-full flex items-center gap-1">
-          <span className="text-[#002341] text-[8px] md:text-[9px] font-medium shrink-0">Du :</span>
-          <input
-            type="date"
-            value={du}
-            onChange={(e) => setDu(e.target.value)}
-            className="flex-1 h-5 md:h-6 rounded-full bg-white/70 text-[9px] md:text-[10px] px-3 outline-none text-gray-500"
-          />
-        </div>
-        <div className="w-full flex items-center gap-1">
-          <span className="text-[#002341] text-[8px] md:text-[9px] font-medium shrink-0">Au :</span>
-          <input
-            type="date"
-            value={au}
-            onChange={(e) => setAu(e.target.value)}
-            className="flex-1 h-5 md:h-6 rounded-full bg-white/70 text-[9px] md:text-[10px] px-3 outline-none text-gray-500"
-          />
-        </div>
         <button
           type="submit"
           className="mt-0.5 px-4 py-0.5 bg-white/50 hover:bg-white/80 text-[#002b49] text-[8px] md:text-[9px] font-black uppercase rounded-full transition-all"

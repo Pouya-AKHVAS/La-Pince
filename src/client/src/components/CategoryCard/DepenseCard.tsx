@@ -47,13 +47,16 @@ export default function DepenseCard() {
           onChange={(e) => setTransaction(e.target.value)}
           className="w-full h-5 md:h-6 rounded-full bg-white/70 text-[9px] md:text-[10px] px-3 outline-none placeholder:text-gray-500"
         />
-        <input
-          type="number"
-          placeholder="Montant"
-          value={montant}
-          onChange={(e) => setMontant(e.target.value)}
-          className="w-full h-5 md:h-6 rounded-full bg-white/70 text-[9px] md:text-[10px] px-3 outline-none placeholder:text-gray-500"
-        />
+        <div className="w-full flex items-center h-5 md:h-6 rounded-full bg-white/70 px-3 gap-1">
+          <input
+            type="number"
+            placeholder="Montant"
+            value={montant}
+            onChange={(e) => setMontant(e.target.value)}
+            className="flex-1 bg-transparent text-[9px] md:text-[10px] outline-none placeholder:text-gray-500 min-w-0"
+          />
+          <span className="text-[9px] md:text-[10px] text-gray-500 shrink-0">€</span>
+        </div>
         <input
           type="date"
           value={date}
