@@ -1,15 +1,25 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import type { Category } from "../../types/category.js";
 
 interface CategorySelectProps {
-  categories: string[];
+  categories: Category[];
   value: string;
-  onChange: (value: string) => void;
+  onChange: (val: string) => void;
   small?: boolean;
 }
 
-export default function CategorySelect({ categories, value, onChange, small = false }: CategorySelectProps) {
+export default function CategorySelect({ 
+  categories, 
+  value, 
+  onChange, 
+  small = false 
+}: CategorySelectProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+
+  const selectedCategory = Array.isArray(categories) 
+    ? categories.find((cat) => cat?.id?.toString() === value)
+    : null;
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -22,8 +32,10 @@ export default function CategorySelect({ categories, value, onChange, small = fa
   }, []);
 
   return (
-    <div ref={ref} className={`relative z-20 ${small ? "w-20" : "w-24"}`}>
+    /* 1. Largeur augmentée ici : w-32 pour small, w-44 pour normal */
+    <div ref={ref} className={`relative z-20 ${small ? "w-32" : "w-44"}`}>
       <div
+        /* 2. Le fond orange [#FF7F00] est appliqué sur tout le conteneur */
         className={`bg-[#FF7F00] shadow-md overflow-hidden transition-[border-radius] ${
           open ? "rounded-md duration-100 delay-0" : "rounded-full duration-100 delay-200"
         }`}
@@ -32,36 +44,40 @@ export default function CategorySelect({ categories, value, onChange, small = fa
         <button
           type="button"
           onClick={() => setOpen(!open)}
-          className="w-full flex items-center justify-between gap-1 px-2 py-1 focus:outline-none"
+          className="w-full flex items-center justify-between gap-1 px-3 py-1 focus:outline-none"
         >
-          <span className={`flex-1 text-center text-[#002341] font-medium truncate ${small ? "text-[9px]" : "text-[10px]"}`}>
-            {value || "Catégorie"}
+          <span className={`flex-1 text-center text-[#002341] font-bold truncate ${small ? "text-[10px]" : "text-[11px]"}`}>
+            {selectedCategory ? selectedCategory.name : "Catégorie"}
           </span>
-          <span
-            className={`text-white text-[10px] transition-transform duration-300 ${
-              open ? "rotate-180" : ""
-            }`}
-          >
+          <span className={`text-white text-[10px] transition-transform duration-300 ${open ? "rotate-180" : ""}`}>
             ▼
           </span>
         </button>
 
-        {/* Liste animée */}
+        {/* Liste déroulante (Slider) */}
         <div
-          className={`transition-all duration-300 overflow-hidden ${
+          className={`transition-all duration-300 overflow-y-auto ${
             open ? "max-h-40" : "max-h-0"
           }`}
         >
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              type="button"
-              onClick={() => { onChange(cat); setOpen(false); }}
-              className="w-full text-left px-3 py-1 text-[#002341] text-[10px] hover:bg-orange-400 transition-colors"
-            >
-              {cat}
-            </button>
-          ))}
+          {Array.isArray(categories) && categories.map((cat) => {
+            if (!cat || cat.id === undefined) return null;
+
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => {
+                  onChange(cat.id.toString());
+                  setOpen(false);
+                }}
+                /* 3. On garde le texte sombre sur fond orange, avec un hover plus clair */
+                className="w-full text-left px-3 py-2 text-[#002341] text-[10px] font-medium hover:bg-orange-400 transition-colors border-t border-white/20"
+              >
+                {cat.name || "Sans nom"}
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

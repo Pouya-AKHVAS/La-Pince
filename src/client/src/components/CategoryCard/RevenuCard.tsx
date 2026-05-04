@@ -1,26 +1,52 @@
-import { useState } from "react";
+import { useState, useEffect } from "react"; // 1. Ajout de useEffect
 import CategorySelect from "./CategorySelect";
-
-const CATEGORIES = ["Salaire", "Freelance", "Investissement", "Cadeau", "Autres"];
+// 2. Importation du service et du type
+import { fetchCategories } from "../../services/categoryApi.js"; 
+import type { Category } from "../../types/category.js";
 
 export default function RevenuCard() {
+  // 3. Remplacement du state par un tableau d'objets Category
+  const [categories, setCategories] = useState<Category[]>([]);
   const [categorie, setCategorie] = useState("");
   const [transaction, setTransaction] = useState("");
   const [montant, setMontant] = useState("");
   const [date, setDate] = useState("");
 
+    // 4. Chargement des données au montage du composant
+  useEffect(() => {
+    async function loadCategories() {
+      try {
+        const data = await fetchCategories();
+        const expenseCategories = data.filter((cat) => cat.type === "INCOME");
+        setCategories(expenseCategories);
+      } catch (error) {
+        console.error("Erreur lors du chargement des catégories:", error);
+      }
+    }
+    loadCategories();
+  }, []);
+
   return (
     <div className="relative w-44 h-44 md:w-56 md:h-56 rounded-full bg-[#74BAC2] flex flex-col items-center justify-center gap-1 md:gap-2 shadow-xl shrink-0">
       {/* Badge Catégorie */}
-      <div className="absolute top-2 right-2 md:hidden">
-        <CategorySelect categories={CATEGORIES} value={categorie} onChange={setCategorie} small />
+      <div className="absolute top-1 right-2 md:hidden">
+        <CategorySelect
+          categories={categories}
+          value={categorie}
+          onChange={setCategorie}
+          small
+        />
       </div>
-      <div className="absolute top-4 right-6 hidden md:block">
-        <CategorySelect categories={CATEGORIES} value={categorie} onChange={setCategorie} />
+      <div className="absolute top-2 right-6 hidden md:block">
+                <CategorySelect
+                  categories={categories}
+                  value={categorie}
+                  onChange={setCategorie}
+                />
       </div>
 
       {/* Titre */}
-      <p className="text-[#002341] font-semibold text-sm md:text-xl tracking-tight mb-1 bg-white px-3 md:px-4 py-0.5 md:py-1 rounded-full">
+      <p className="text-[#002341] font-semibold text-sm md:text-xl tracking-tight bg-white px-3 md:px-4 py-0.5 md:py-1 rounded-full">
         <span className="font-black">+</span> Revenu
       </p>
 
