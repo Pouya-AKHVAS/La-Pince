@@ -25,4 +25,3 @@ export interface ApiError {
   message: string;
   field?: string; // Permet de savoir quel champ est en erreur, par exemple "email" si l'email est déjà pris.
 }
-
