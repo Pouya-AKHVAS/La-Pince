@@ -24,8 +24,8 @@ export default function CategorySelect({ categories, value, onChange, small = fa
   return (
     <div ref={ref} className={`relative z-20 ${small ? "w-20" : "w-24"}`}>
       <div
-        className={`bg-[#FF7F00] shadow-md overflow-hidden transition-[border-radius] duration-100 transition-[max-height] duration-300 ${
-          open ? "rounded-md" : "rounded-full"
+        className={`bg-[#FF7F00] shadow-md overflow-hidden transition-[border-radius] ${
+          open ? "rounded-md duration-100 delay-0" : "rounded-full duration-100 delay-200"
         }`}
       >
         {/* Bouton principal */}
