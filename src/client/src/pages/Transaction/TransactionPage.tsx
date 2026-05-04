@@ -6,12 +6,33 @@ import BudgetCard from "../../components/CategoryCard/BudgetCard";
 import TransactionSheet from "../../components/TransactionList/TransactionSheet";
 import { MOCK_TRANSACTIONS } from "../../mocks/transactions.mock";
 
+import AlertPopup from "../../components/Alert/AlertPopup";
+import { MOCK_BUDGETS } from "../../mocks/budgets.mock";
+import { computeAlerts } from "../../utils/computeAlerts";
+import type { Alert } from "../../types/alert";
+
 // Page placeholder — sera remplacée par la version de Marie
 export default function TransactionPage() {
   const footerRef = useRef<HTMLElement>(null);
   const [footerHeight, setFooterHeight] = useState(() =>
-    window.innerWidth >= 768 ? 50 : 35
+    window.innerWidth >= 768 ? 50 : 35,
   );
+
+  // --- Logique alertes ---
+  const [alerts, setAlerts] = useState<Alert[]>([]);
+
+  // null = aucune popup visible. Un nombre = index de l'alerte affichée.
+  const [currentAlertIndex, setCurrentAlertIndex] = useState<number | null>(
+    null,
+  );
+
+  useEffect(() => {
+    const computed = computeAlerts(MOCK_TRANSACTIONS, MOCK_BUDGETS);
+    if (computed.length > 0) {
+      setAlerts(computed);
+      setCurrentAlertIndex(0); // affiche la première alerte dès le montage
+    }
+  }, []); // [] = une seule fois au montage du composant
 
   useEffect(() => {
     if (!footerRef.current) return;
@@ -25,6 +46,21 @@ export default function TransactionPage() {
   const transactionsTried = [...MOCK_TRANSACTIONS].sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
   );
+
+  function handleCloseAlert() {
+    if (currentAlertIndex === null) return;
+
+    const nextIndex = currentAlertIndex + 1;
+
+    if (nextIndex < alerts.length) {
+      setCurrentAlertIndex(nextIndex); // alerte suivante
+    } else {
+      setCurrentAlertIndex(null);     // plus d'alertes → popup disparaît
+    }
+  }
+
+  const currentAlert =
+    currentAlertIndex !== null ? alerts[currentAlertIndex] : null;
 
   return (
     <main className="fixed inset-0 w-full h-full bg-[#cbd5e1] overflow-hidden font-sans text-[#002b49]">
@@ -82,7 +118,20 @@ export default function TransactionPage() {
           </div>
         </section>
       </div>
-      <TransactionSheet transactions={transactionsTried} footerHeight={footerHeight} />
+            {currentAlert && (
+        <AlertPopup
+          key={currentAlert.id}
+          // key change quand l'alerte change → React démonte/remonte AlertPopup
+          // → l'animation d'entrée rejoue pour chaque alerte. Sans key,
+          // React réutiliserait le même composant → pas d'animation.
+          alert={currentAlert}
+          onClose={handleCloseAlert}
+        />
+      )}
+      <TransactionSheet
+        transactions={transactionsTried}
+        footerHeight={footerHeight}
+      />
       <footer ref={footerRef} className="absolute bottom-0 left-0 w-full z-50">
         <Footer showIcons activeIds={["home", "transactions"]} />
       </footer>
