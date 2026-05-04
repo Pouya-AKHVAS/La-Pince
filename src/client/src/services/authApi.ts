@@ -83,3 +83,13 @@ export async function fetchLogout(): Promise<void> {
     // la déconnexion côté Front quoi qu'il arrive.
   }
 }
+
+export async function refreshSession(): Promise<void> {
+  const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/refresh`, {
+    method: "POST",
+    credentials: "include",
+  });
+  if (!response.ok) {
+    throw new Error("Refresh token invalide ou expiré");
+  }
+}
