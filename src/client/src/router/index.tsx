@@ -4,6 +4,7 @@ import LoginPage from "../pages/auth/Login/loginPage";
 import PrivateRoute from "../components/PrivateRoute";
 import ParametrePage from "../pages/Parametre/ParametrePage";
 import LandingPage from "../pages/landingPage/landingPage";
+import DashboardPage from "../pages/Dashboard/DashboardPage";
 
 export const router = createBrowserRouter([
   // --- ROUTES PUBLIQUES ---
@@ -34,8 +35,8 @@ export const router = createBrowserRouter([
     element: <PrivateRoute />,
     children: [
       {
-        path: "/dashboard",
-        // element: <DashboardPage />, // À décommenter quand il sera créée
+        path: "/accueil",
+        // element: <DashboardPage />, // À décommenter quand il sera créée. Attention c'est pas dashboard ici mais la page d'accueil
         element: <div>Bienvenue sur ton Dashboard sécurisé !</div>,
       },
       // {
@@ -48,6 +49,10 @@ export const router = createBrowserRouter([
         // element: <MentionsLegalesPage />, // À décommenter quand il sera créée
         element: <div>Page des mentions légales</div>,
       },
+      {
+        path : "/dashboard",
+        element: <DashboardPage />
+      }
     ],
   },
 ]);
