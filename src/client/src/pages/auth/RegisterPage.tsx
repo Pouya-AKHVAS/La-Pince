@@ -54,7 +54,7 @@ export default function RegisterPage() {
         </div>
         <img
           src="/WEBP/Desktop/Lapince-Logo-Desktop.webp"
-          className="absolute top-10 left-20 w-24 md:w-36 lg:w-60 z-50 transition-all"
+          className="absolute top-10 left-20 w-24 lg:w-60 z-50 transition-all"
           alt="Logo"
         />
       </div>

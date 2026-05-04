@@ -72,6 +72,18 @@ export default function TransactionPage() {
         alt=""
       />
 
+      {/* Logo La Pince — classes identiques à la page login */}
+      <img
+        src="/WEBP/Mobile/Lapince-Logo-Mobile.webp"
+        className="absolute top-6 left-6 w-28 z-50 md:hidden"
+        alt="Logo Mobile"
+      />
+      <img
+        src="/WEBP/Desktop/Lapince-Logo-Desktop.webp"
+        className="absolute top-10 left-15 w-24 lg:w-60 z-50 transition-all hidden md:block"
+        alt="Logo"
+      />
+
       {/* Overlay */}
       <div
         className="absolute inset-0 bg-white/30 z-10 pointer-events-none"
@@ -82,15 +94,17 @@ export default function TransactionPage() {
       <div className="relative z-20 flex flex-col h-full pb-10">
         {/* En-tête Solde */}
         <header className="flex flex-col items-center pt-10 pb-4 shrink-0">
-          <img
-            src="/WEBP/Mobile/Lapince-Logo-Mobile.webp"
-            className="w-14 mb-3"
-            alt="Logo La Pince"
-          />
-          <p className="text-xs font-bold uppercase tracking-widest opacity-60">
-            Solde
+          <h1 className="text-[35px] md:text-[50px] lg:text-[60px] font-black uppercase leading-none tracking-tighter">
+            Accueil
+          </h1>
+          <p className="text-base font-bold mt-1">Mon compte</p>
+          <p className="text-sm opacity-60 mt-0.5 capitalize">
+            {new Date().toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}
           </p>
-          <p className="text-4xl font-black tracking-tight">000,00 €</p>
+          <p className="mt-4 leading-none">
+            <span className="text-xs font-bold uppercase tracking-widest opacity-60 align-bottom">Solde *&nbsp;</span>
+            <span className="text-4xl font-black tracking-tight">000,00 €</span>
+          </p>
         </header>
 
         {/* Cartes — layout en bulles */}

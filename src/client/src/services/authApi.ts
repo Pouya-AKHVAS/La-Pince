@@ -66,8 +66,9 @@ export async function registerUser(formData: RegisterFormData): Promise<AuthUser
     throw new Error("Non authentifié ou session expirée");
   }
 
-  // Le serveur renvoie juste l'objet utilisateur (plus de token !)
-  return response.json(); 
+  const data = await response.json();
+  // Le serveur envoie { user: {...} }, on extrait l'objet imbriqué
+  return data.user ?? data;
 }
 
 export async function fetchLogout(): Promise<void> {
