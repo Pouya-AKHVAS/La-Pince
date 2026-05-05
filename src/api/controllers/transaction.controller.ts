@@ -58,7 +58,9 @@ export const create = async (req: Request, res: Response) => {
     // Générer une alerte si le budget est dépassé
     // (Appel au générateur d'alertes, logique métier séparée)
     // -------------------------------------------------------------
-    await generateBudgetAlert(transaction.budgetId, req.user.id);
+    if (transaction.budgetId) {
+      await generateBudgetAlert(transaction.budgetId, req.user.id);
+    }
 
     return res.status(201).json(transaction);
   } catch (error: any) {
