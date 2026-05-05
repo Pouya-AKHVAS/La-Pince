@@ -146,7 +146,7 @@ function setRefreshTokenCookie(res: Response, refreshToken: Token) {
     // Comme en local secure est false, sameSite="none" faisait crasher le cookie. Solution : En local, on utilise "lax" (qui accepte le HTTP), et en prod "none".
     sameSite: config.isProd ? "none" : "lax",
     maxAge: refreshToken.expiresIn,
-    path: "/auth/refresh",
+    path: config.isProd ? "/api/auth/refresh" : "/auth/refresh",
   });
 }
 
