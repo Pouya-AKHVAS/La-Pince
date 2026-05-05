@@ -59,7 +59,12 @@ export async function register(req: Request, res: Response) {
     },
   });
 
-  // Tout s'est bien passé : on retourne un 201 (ressource créée) avec les infos du nouvel utilisateur
+  // Générer les tokens et poser les cookies comme pour le login
+  const { accessToken, refreshToken } = generateAuthTokens(user as unknown as User);
+  await replaceRefreshTokenInDatabase(refreshToken, user as unknown as User);
+  setAccessTokenCookie(res, accessToken);
+  setRefreshTokenCookie(res, refreshToken);
+
   res.status(201).json({ message: "Inscription réussie", user });
 }
 
