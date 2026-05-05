@@ -23,6 +23,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const checkSession = async () => {
+      // Si le cookie indicateur est absent, aucune session n'existe → pas d'appel API inutile
+      if (!document.cookie.includes("sessionExists=1")) {
+        setIsInitializing(false);
+        return;
+      }
+
       try {
         const currentUser = await fetchCurrentUser();
         setUser(currentUser);

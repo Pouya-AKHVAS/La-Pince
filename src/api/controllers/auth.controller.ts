@@ -64,6 +64,7 @@ export async function register(req: Request, res: Response) {
   await replaceRefreshTokenInDatabase(refreshToken, user as unknown as User);
   setAccessTokenCookie(res, accessToken);
   setRefreshTokenCookie(res, refreshToken);
+  setSessionIndicatorCookie(res, accessToken);
 
   res.status(201).json({ message: "Inscription réussie", user });
 }
@@ -109,6 +110,7 @@ await replaceRefreshTokenInDatabase(refreshToken, user);
 
 setAccessTokenCookie(res, accessToken);
 setRefreshTokenCookie(res, refreshToken);
+setSessionIndicatorCookie(res, accessToken);
 
 // Renvoyer les token vers l'utilisateur
 res.json({
@@ -136,6 +138,17 @@ function setAccessTokenCookie(res: Response, accessToken: Token) {
     httpOnly: true,
     secure: config.isProd, // HTTPS uniquement en production
     sameSite: config.isProd ? "none" : "lax", // pareil que pour le refresh token, en local on peut se permettre "lax" pour que ça fonctionne en HTTP
+    maxAge: accessToken.expiresIn,
+  });
+}
+
+function setSessionIndicatorCookie(res: Response, accessToken: Token) {
+  // Cookie lisible par JS (non-httpOnly) — contient uniquement un flag, aucune donnée sensible.
+  // Permet au frontend de savoir si une session existe sans faire d'appel API inutile.
+  res.cookie("sessionExists", "1", {
+    httpOnly: false,
+    secure: config.isProd,
+    sameSite: config.isProd ? "none" : "lax",
     maxAge: accessToken.expiresIn,
   });
 }
@@ -184,15 +197,16 @@ export async function refresh(req: Request, res: Response) {
   //Mettre à jour les cookies
   setAccessTokenCookie(res, newTokens.accessToken);
   setRefreshTokenCookie(res, newTokens.refreshToken);
+  setSessionIndicatorCookie(res, newTokens.accessToken);
 
-  //Renvoyer les nouveaux tokens, le refresh token est dans le cookie, c'est plus sécurisé
   res.json({ accessToken: newTokens.accessToken.token });
 }
 
 
 export async function logoutUser(req: Request, res: Response) {
   res.clearCookie("accessToken");
-  res.clearCookie("refreshToken", { path: "/auth/refresh" });
+  res.clearCookie("refreshToken", { path: config.isProd ? "/api/auth/refresh" : "/auth/refresh" });
+  res.clearCookie("sessionExists");
   if (req.user) {
     await prisma.refreshToken.deleteMany({ where: { userId: req.user.id } });
   }
