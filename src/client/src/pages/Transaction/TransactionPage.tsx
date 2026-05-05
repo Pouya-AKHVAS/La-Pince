@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { fetchTransactions, type Transaction } from "../../services/transactionApi";//Imports Transactions
+
 import Footer from "../../components/Footer/footer";
 import DepenseCard from "../../components/CategoryCard/DepenseCard";
 import RevenuCard from "../../components/CategoryCard/RevenuCard";
@@ -10,6 +12,8 @@ import AlertPopup from "../../components/Alert/AlertPopup";
 import { MOCK_BUDGETS } from "../../mocks/budgets.mock";
 import { computeAlerts } from "../../utils/computeAlerts";
 import type { Alert } from "../../types/alert";
+
+
 
 // Page placeholder — sera remplacée par la version de Marie
 export default function TransactionPage() {
@@ -25,6 +29,23 @@ export default function TransactionPage() {
   const [currentAlertIndex, setCurrentAlertIndex] = useState<number | null>(
     null,
   );
+
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+
+  //Transactions
+  useEffect(() => {
+  async function load() {
+    try {
+      const data = await fetchTransactions();
+      setTransactions(data);
+    } catch (error) {
+      console.error("Erreur chargement transactions :", error);
+    }
+  }
+  load();
+}, []);
+const solde = transactions.reduce((sum, t) => sum + Number(t.amount), 0);
+
 
   useEffect(() => {
     const computed = computeAlerts(MOCK_TRANSACTIONS, MOCK_BUDGETS);
@@ -103,7 +124,7 @@ export default function TransactionPage() {
           </p>
           <p className="mt-4 leading-none">
             <span className="text-xs font-bold uppercase tracking-widest opacity-60 align-bottom">Solde *&nbsp;</span>
-            <span className="text-4xl font-black tracking-tight">000,00 €</span>
+            <span className="text-4xl font-black tracking-tight"> {solde.toLocaleString("fr-FR", { style: "currency", currency: "EUR" })}</span>
           </p>
         </header>
 
