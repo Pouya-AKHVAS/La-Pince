@@ -11,7 +11,7 @@ export const MOCK_TRANSACTIONS: Transaction[] = [
     date: "2024-04-11T00:00:00.000Z",
     description: "Virement Salaire",
     categoryId: 1,
-    category: { id: 1, name: "Salaire" },
+    category: { id: 1, name: "Salaire", type: "INCOME" },
   },
   {
     id: 2,
@@ -19,7 +19,7 @@ export const MOCK_TRANSACTIONS: Transaction[] = [
     date: "2024-04-12T00:00:00.000Z",
     description: "Supermarché U",
     categoryId: 2,
-    category: { id: 2, name: "Alimentation" },
+    category: { id: 2, name: "Alimentation", type: "EXPENSE" },
   },
   {
     id: 3,
@@ -27,7 +27,7 @@ export const MOCK_TRANSACTIONS: Transaction[] = [
     date: "2024-04-05T00:00:00.000Z",
     description: "Abonnement Ciné",
     categoryId: 3,
-    category: { id: 3, name: "Loisirs" },
+    category: { id: 3, name: "Loisirs", type: "EXPENSE" },
   },
   {
     id: 4,
@@ -35,7 +35,7 @@ export const MOCK_TRANSACTIONS: Transaction[] = [
     date: "2024-04-03T00:00:00.000Z",
     description: "Télépéage",
     categoryId: 4,
-    category: { id: 4, name: "Transport" },
+    category: { id: 4, name: "Transport", type: "EXPENSE" },
   },
   {
     id: 5,
@@ -43,7 +43,7 @@ export const MOCK_TRANSACTIONS: Transaction[] = [
     date: "2024-04-01T00:00:00.000Z",
     description: "Anniversaire",
     categoryId: 5,
-    category: { id: 5, name: "Cadeau" },
+    category: { id: 5, name: "Cadeau", type: "INCOME" },
   },
   // Pour tester que le scroll fonctionne, duplique ces entrées
   // jusqu'à avoir ~15-20 lignes. Le scroll n'est visible que si le contenu dépasse.

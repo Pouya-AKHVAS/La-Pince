@@ -1,4 +1,4 @@
-import { Alert } from "../types/alert.js";
+import type { Alert } from "../types/alert.js";
 
 export async function fetchAlerts(): Promise<Alert[]> {
   const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/alerts`, {
