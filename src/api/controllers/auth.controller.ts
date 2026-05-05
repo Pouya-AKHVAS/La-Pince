@@ -152,7 +152,7 @@ function setRefreshTokenCookie(res: Response, refreshToken: Token) {
 
 export async function refresh(req: Request, res: Response) {
   // Vérification d'abord dans les cookies, sinon dans le body (au cas où le client ne gère pas les cookies, en dev par exemple)
-  const refreshToken = req.cookies.refreshToken || req.body.refreshToken; 
+  const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
 
   if (!refreshToken) {
     throw new BadRequestError("Refresh token manquant");
