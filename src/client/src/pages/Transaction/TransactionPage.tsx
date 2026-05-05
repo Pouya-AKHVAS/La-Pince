@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { fetchTransactions, type Transaction } from "../../services/transactionApi";//Imports Transactions
+import {
+  fetchTransactions,
+  type Transaction,
+} from "../../services/transactionApi"; //Imports Transactions
 
 import Footer from "../../components/Footer/footer";
 import DepenseCard from "../../components/CategoryCard/DepenseCard";
@@ -12,8 +15,6 @@ import AlertPopup from "../../components/Alert/AlertPopup";
 import { MOCK_BUDGETS } from "../../mocks/budgets.mock";
 import { computeAlerts } from "../../utils/computeAlerts";
 import type { Alert } from "../../types/alert";
-
-
 
 // Page placeholder — sera remplacée par la version de Marie
 export default function TransactionPage() {
@@ -33,19 +34,26 @@ export default function TransactionPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   //Transactions
-  useEffect(() => {
-  async function load() {
+  const load = async () => {
     try {
       const data = await fetchTransactions();
       setTransactions(data);
     } catch (error) {
       console.error("Erreur chargement transactions :", error);
     }
-  }
-  load();
-}, []);
-const solde = transactions.reduce((sum, t) => sum + Number(t.amount), 0);
+  };
 
+  const solde = transactions.reduce((sum, t) => {
+    return t.category.type === "INCOME"
+      ? sum + Number(t.amount)
+      : sum - Number(t.amount);
+  }, 0);
+
+  // transactions update
+
+  useEffect(() => {
+    load();
+  }, []);
 
   useEffect(() => {
     const computed = computeAlerts(MOCK_TRANSACTIONS, MOCK_BUDGETS);
@@ -76,7 +84,7 @@ const solde = transactions.reduce((sum, t) => sum + Number(t.amount), 0);
     if (nextIndex < alerts.length) {
       setCurrentAlertIndex(nextIndex); // alerte suivante
     } else {
-      setCurrentAlertIndex(null);     // plus d'alertes → popup disparaît
+      setCurrentAlertIndex(null); // plus d'alertes → popup disparaît
     }
   }
 
@@ -120,11 +128,22 @@ const solde = transactions.reduce((sum, t) => sum + Number(t.amount), 0);
           </h1>
           <p className="text-base font-bold mt-1">Mon compte</p>
           <p className="text-sm opacity-60 mt-0.5 capitalize">
-            {new Date().toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}
+            {new Date().toLocaleDateString("fr-FR", {
+              month: "long",
+              year: "numeric",
+            })}
           </p>
           <p className="mt-4 leading-none">
-            <span className="text-xs font-bold uppercase tracking-widest opacity-60 align-bottom">Solde *&nbsp;</span>
-            <span className="text-4xl font-black tracking-tight"> {solde.toLocaleString("fr-FR", { style: "currency", currency: "EUR" })}</span>
+            <span className="text-xs font-bold uppercase tracking-widest opacity-60 align-bottom">
+              Solde *&nbsp;
+            </span>
+            <span className="text-4xl font-black tracking-tight">
+              {" "}
+              {solde.toLocaleString("fr-FR", {
+                style: "currency",
+                currency: "EUR",
+              })}
+            </span>
           </p>
         </header>
 
@@ -133,10 +152,10 @@ const solde = transactions.reduce((sum, t) => sum + Number(t.amount), 0);
           {/* Desktop : bulles bien espacées */}
           <div className="hidden md:block relative w-full max-w-4xl h-96">
             <div className="absolute bottom-60 right-12">
-              <RevenuCard />
+              <RevenuCard onSuccess={load} />
             </div>
             <div className="absolute bottom-60 left-12">
-              <DepenseCard />
+              <DepenseCard onSuccess={load} />
             </div>
             <div className="absolute bottom-10 left-1/2 -translate-x-1/2">
               <BudgetCard />
@@ -146,14 +165,14 @@ const solde = transactions.reduce((sum, t) => sum + Number(t.amount), 0);
           {/* Mobile : 2 en haut côte à côte + Budget centré en bas */}
           <div className="flex md:hidden flex-col items-center gap-6 w-full px-2">
             <div className="flex gap-6 justify-center w-full">
-              <DepenseCard />
-              <RevenuCard />
+              <DepenseCard onSuccess={load} />
+              <RevenuCard onSuccess={load} />
             </div>
             <BudgetCard />
           </div>
         </section>
       </div>
-            {currentAlert && (
+      {currentAlert && (
         <AlertPopup
           key={currentAlert.id}
           // key change quand l'alerte change → React démonte/remonte AlertPopup

@@ -6,7 +6,7 @@ import type { Category } from "../../types/category.js";
 
 import { createTransaction } from "../../services/transactionApi.js";
 
-export default function DepenseCard() {
+export default function DepenseCard({ onSuccess }: { onSuccess?: () => void }) {
   // 3. Remplacement du state par un tableau d'objets Category
   const [categories, setCategories] = useState<Category[]>([]);
   const [categorie, setCategorie] = useState("");
@@ -67,7 +67,8 @@ export default function DepenseCard() {
               description: transaction,
               idcategory : Number(categorie),
             });
-
+            //Reload
+             onSuccess?.();
             // Réinitialisation du formulaire
             setTransaction("");
             setMontant("");

@@ -5,7 +5,7 @@ import { fetchCategories } from "../../services/categoryApi.js";
 import type { Category } from "../../types/category.js";
 import { createTransaction } from "../../services/transactionApi.js";
 
-export default function RevenuCard() {
+export default function RevenuCard({ onSuccess }: { onSuccess?: () => void }) {
   // 3. Remplacement du state par un tableau d'objets Category
   const [categories, setCategories] = useState<Category[]>([]);
   const [categorie, setCategorie] = useState("");
@@ -62,6 +62,8 @@ export default function RevenuCard() {
               description: transaction,
               idcategory: Number(categorie),
             });
+            //Reload
+             onSuccess?.()
             setTransaction("");
             setMontant("");
             setDate("");
