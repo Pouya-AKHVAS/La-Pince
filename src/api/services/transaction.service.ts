@@ -23,27 +23,25 @@ export const getAllTransactions = async (userId: number, filters: any) => { // O
 export const createTransaction = async (userId: number, data: any) => {
   // A. Vérification de la catégorie
   const category = await prisma.category.findUnique({
-    where: { id: data.idcategory }
+    where: { id: data.idcategory },
   });
 
   if (!category) {
     throw new Error("Catégorie introuvable");
   }
 
-  // NOTE: Les champs is_default et id_user semblent absents du schéma Prisma actuel pour Category.
-  // Si vous souhaitez restreindre l'utilisation des catégories, assurez-vous de mettre à jour le schéma.
-
-    // B. Création de la transaction
-    const transaction = await prisma.transaction.create({
-        data: {
-            userId,
-            amount: data.amount,
-            date: new Date(data.date), // // On convertit le string ISO en objet Date pour Prisma
-            categoryId: data.idcategory,
-            description: data.description,
-        },
-        include: { category: true }, // On inclut la catégorie pour avoir le type (income/expense) côté front
-    });
+  // B. Création de la transaction
+  const transaction = await prisma.transaction.create({
+    data: {
+      userId,
+      amount: data.amount,
+      date: new Date(data.date),
+      categoryId: data.idcategory,
+      description: data.description,
+      budgetId: data.budgetId ? Number(data.budgetId) : null,
+    },
+    include: { category: true }, // On inclut la catégorie pour avoir le type (income/expense) côté front
+  });
 
   return transaction;
 };
