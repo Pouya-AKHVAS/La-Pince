@@ -197,17 +197,17 @@ export default function DashboardPage() {
                 <h3 className="text-xl font-black italic uppercase">Détails des opérations</h3>
                 
                 {/* --- BARRE DE FILTRES PRINCIPAUX --- */}
-                <div className="flex flex-wrap items-center justify-center gap-2">
+                <div className="flex flex-wrap items-center justify-center gap-3">
                   <input 
                     type="text" 
                     placeholder="Rechercher..." 
-                    className="px-4 py-2 rounded-full bg-white/50 border border-white/20 text-xs font-bold focus:outline-none focus:bg-white/80 transition-all w-40"
+                    className="px-5 py-2.5 rounded-full bg-white/50 border border-white/20 text-sm font-bold focus:outline-none focus:bg-white/80 transition-all w-48 shadow-sm"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                   />
                   
                   <select 
-                    className="px-4 py-2 rounded-full bg-white/50 border border-white/20 text-xs font-bold focus:outline-none focus:bg-white/80 transition-all"
+                    className="px-5 py-2.5 rounded-full bg-white/50 border border-white/20 text-sm font-bold focus:outline-none focus:bg-white/80 transition-all shadow-sm"
                     value={filterType}
                     onChange={(e) => setFilterType(e.target.value as any)}
                   >
@@ -216,23 +216,23 @@ export default function DashboardPage() {
                     <option value="EXPENSE">Dépenses</option>
                   </select>
 
-                  <div className="flex items-center gap-1 bg-white/30 px-3 py-1 rounded-full border border-white/20">
-                    <span className="text-[10px] font-black uppercase opacity-60">Du</span>
-                    <input type="date" className="bg-transparent text-[10px] font-bold outline-none" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-                    <span className="text-[10px] font-black uppercase opacity-60">Au</span>
-                    <input type="date" className="bg-transparent text-[10px] font-bold outline-none" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                  <div className="flex items-center gap-2 bg-white/30 px-5 py-2.5 rounded-full border border-white/20 shadow-sm">
+                    <span className="text-xs font-black uppercase opacity-60">Du</span>
+                    <input type="date" className="bg-transparent text-xs font-bold outline-none cursor-pointer" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                    <span className="text-xs font-black uppercase opacity-60">Au</span>
+                    <input type="date" className="bg-transparent text-xs font-bold outline-none cursor-pointer" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
                   </div>
                 </div>
               </div>
 
               {/* --- FILTRE PAR CATÉGORIES (MULTI-SÉLECTION) --- */}
-              <div className="flex flex-col gap-2">
-                <p className="text-[10px] font-black uppercase tracking-widest opacity-50 text-center md:text-left">Filtrer par catégories :</p>
+              <div className="flex flex-col gap-3">
+                <p className="text-xs font-black uppercase tracking-widest opacity-50 text-center md:text-left">Filtrer par catégories :</p>
                 <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-                  {/* Bouton "Toutes" pour réinitialiser les catégories */}
+                  {/* Bouton "Toutes" */}
                   <button
                     onClick={() => setSelectedCategoryIds([])}
-                    className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase transition-all border ${
+                    className={`px-4 py-2 rounded-full text-xs font-black uppercase transition-all border ${
                       selectedCategoryIds.length === 0 
                       ? "bg-[#002b49] text-white border-[#002b49] shadow-md scale-105" 
                       : "bg-white/20 text-[#002b49] border-white/30 hover:bg-white/40"
@@ -241,22 +241,21 @@ export default function DashboardPage() {
                     Toutes
                   </button>
 
-                  {/* Liste des catégories dynamiques */}
+                  {/* Liste des catégories */}
                   {categories
-                    .filter(c => filterType === "ALL" || c.type === filterType) // On filtre les catégories affichées selon le type sélectionné
+                    .filter(c => filterType === "ALL" || c.type === filterType)
                     .map(cat => (
                       <button
                         key={cat.id}
                         onClick={() => toggleCategory(cat.id)}
-                        className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase transition-all border flex items-center gap-1.5 ${
+                        className={`px-4 py-2 rounded-full text-xs font-black uppercase transition-all border flex items-center gap-2 ${
                           selectedCategoryIds.includes(cat.id)
                           ? "bg-white text-[#002b49] border-white shadow-lg scale-105" 
                           : "bg-white/20 text-[#002b49] border-white/30 hover:bg-white/40"
                         }`}
                       >
-                        {/* Petit point de couleur si dispo */}
                         {cat.color && (
-                          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: cat.color }}></span>
+                          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: cat.color }}></span>
                         )}
                         {cat.name}
                       </button>
@@ -303,7 +302,7 @@ export default function DashboardPage() {
 
       {currentAlert && <AlertPopup key={currentAlert.id} alert={currentAlert} onClose={handleCloseAlert} />}
       <footer ref={footerRef} className="absolute bottom-0 left-0 w-full z-[60]">
-        <Footer showIcons activeIds={["landingpage", "params", "dashboard", "transactions"]} />
+        <Footer showIcons activeIds={["landingpage", "params",  "transactions"]} />
       </footer>
     </main>
   );
