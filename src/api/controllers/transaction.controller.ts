@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { prisma } from "../lib/prisma.js";
 import * as transactionService from "../services/transaction.service.ts"; // On importe les fonctions du service de transaction pour les utiliser dans les contrôleurs. Cela permet de séparer la logique métier (dans le service) de la gestion des requêtes/réponses (dans le contrôleur), ce qui rend le code plus propre et plus facile à maintenir.
 import { generateBudgetAlert } from "../services/alert.generator.js";
 
@@ -58,7 +59,12 @@ export const create = async (req: Request, res: Response) => {
     // Générer une alerte si le budget est dépassé
     // (Appel au générateur d'alertes, logique métier séparée)
     // -------------------------------------------------------------
-    await generateBudgetAlert(transaction.budgetId, req.user.id);
+    const budget = await prisma.budget.findFirst({
+      where: { userId: req.user.id, id_category: transaction.categoryId },
+    });
+    if (budget) {
+      await generateBudgetAlert(budget.id, req.user.id);
+    }
 
     return res.status(201).json(transaction);
   } catch (error: any) {

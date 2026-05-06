@@ -3,8 +3,13 @@ import { useState } from "react";
 import { registerUser } from "../../services/authApi";
 import type { RegisterFormData, ApiError } from "../../types/auth";
 import Footer from "../../components/Footer/footer";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+
 
 export default function RegisterPage() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
   const [photo, setPhoto] = useState<File | null>(null);
@@ -13,8 +18,9 @@ export default function RegisterPage() {
     setIsLoading(true);
     setError(null);
     try {
-      await registerUser(data);
-      alert("Inscription réussie !");
+      const user = await registerUser(data);
+      login(user);
+      navigate("/accueil");
     } catch (err) {
       setError(err as ApiError);
     } finally {
@@ -54,7 +60,7 @@ export default function RegisterPage() {
         </div>
         <img
           src="/WEBP/Desktop/Lapince-Logo-Desktop.webp"
-          className="absolute top-10 left-20 w-24 md:w-36 lg:w-60 z-50 transition-all"
+          className="absolute top-10 left-20 w-24 lg:w-60 z-50 transition-all"
           alt="Logo"
         />
       </div>

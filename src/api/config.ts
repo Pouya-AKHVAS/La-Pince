@@ -9,7 +9,7 @@ if (!process.env.ALLOWED_ORIGINS) {
 export const config = {
   port: parseInt(process.env.PORT || "3007"),
   allowedOrigins: process.env.ALLOWED_ORIGINS.split(","),
-  isProd: process.env.NODE_ENV === "production" || false,
+  isProd: process.env.NODE_ENV !== "development",
   jwtSecret: process.env.JWT_SECRET,
   logLevel: process.env.LOG_LEVEL || "info",
   logServiceHost: process.env.LOGS_SERVICE_HOST || "localhost",

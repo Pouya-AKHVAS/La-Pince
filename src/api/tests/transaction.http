@@ -1,6 +1,6 @@
 ### Variables d'environnement pour le fichier
 @baseUrl = http://localhost:3007
-# /!\ Important : Tu dois d'abord te connecter via ta route login, 
+# /!\ Important : Tu dois d'abord te connecter via ta route login,
 # récupérer le token généré, et le coller ici pour tester.
 @token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjQsImVtYWlsIjoicG91cmxldGVzdEBleGFtcGxlLmNvbSIsImlhdCI6MTc3NzkzMjk4MSwiZXhwIjoxNzc3OTMzODgxLCJhdWQiOiJhY2Nlc3MifQ.l970YZrtGFdpySksOo_lhCbbFTLVTZ1dRVJOD1GCxb4
 ### ----------------------------------------------------
