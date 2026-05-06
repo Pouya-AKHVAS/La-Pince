@@ -1,5 +1,6 @@
 import { Router } from "express";
 import * as statsController from "../controllers/stats.controller.ts";
+import { authMiddleware } from "../middlewares/access.controller.middleware.ts";
 
 const router = Router();
 
@@ -10,15 +11,15 @@ const router = Router();
  */
 
 // Résumé global : revenus, dépenses, balance nette
-router.get("/overview", statsController.getOverview);
+router.get("/overview", authMiddleware, statsController.getOverview);
 
 // Analyse mensuelle : revenus/dépenses par mois (pour le graphique à barres)
-router.get("/monthly", statsController.getMonthlyStats);
+router.get("/monthly", authMiddleware, statsController.getMonthlyStats);
 
 // Répartition par catégorie : total des dépenses par catégorie (pour un graphique en secteurs ou barres)
-router.get("/categories", statsController.getCategoryStats);
+router.get("/categories", authMiddleware, statsController.getCategoryStats);
 
 // Suivi des budgets : utilisation de chaque budget (limite, dépensé, restant, pourcentage)
-router.get("/budgets", statsController.getBudgetStats);
+router.get("/budgets", authMiddleware, statsController.getBudgetStats);
 
 export default router;
