@@ -1,20 +1,17 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  fetchTransactions,
-  type Transaction,
-} from "../../services/transactionApi"; //Imports Transactions
+import { fetchTransactions, type Transaction } from "../../services/transactionApi"; //Imports Transactions
 
 import Footer from "../../components/Footer/footer";
 import DepenseCard from "../../components/CategoryCard/DepenseCard";
 import RevenuCard from "../../components/CategoryCard/RevenuCard";
 import BudgetCard from "../../components/CategoryCard/BudgetCard";
 import TransactionSheet from "../../components/TransactionList/TransactionSheet";
-import { MOCK_TRANSACTIONS } from "../../mocks/transactions.mock";
 
 import AlertPopup from "../../components/Alert/AlertPopup";
-import { MOCK_BUDGETS } from "../../mocks/budgets.mock";
-import { computeAlerts } from "../../utils/computeAlerts";
+
 import type { Alert } from "../../types/alert";
+import { fetchAlerts, markAlertAsRead, markAllAlertsAsRead } from "../../services/alertApi";
+
 
 // Page placeholder — sera remplacée par la version de Marie
 export default function TransactionPage() {
@@ -55,13 +52,24 @@ export default function TransactionPage() {
     load();
   }, []);
 
-  useEffect(() => {
-    const computed = computeAlerts(MOCK_TRANSACTIONS, MOCK_BUDGETS);
-    if (computed.length > 0) {
-      setAlerts(computed);
-      setCurrentAlertIndex(0); // affiche la première alerte dès le montage
-    }
-  }, []); // [] = une seule fois au montage du composant
+  // Alerts
+
+  useEffect(()=> {
+    const loadAlerts = async() =>{
+      try{
+        const data = await fetchAlerts();
+        // On ne montre ques les alertes non lues
+        const unread = data.filter((a) => !a.isRead);
+          if (unread.length > 0) {
+            setAlerts(unread)
+            setCurrentAlertIndex(0)
+          }
+      } catch(error) {
+        console.error("Erreur chargements alerts :",error)
+      }
+    };
+    loadAlerts();
+  }, []);
 
   useEffect(() => {
     if (!footerRef.current) return;
@@ -79,8 +87,11 @@ const transactionsSorted = [...transactions].sort(
   function handleCloseAlert() {
     if (currentAlertIndex === null) return;
 
-    const nextIndex = currentAlertIndex + 1;
+    const alert = alerts[currentAlertIndex]
+    // Fire-and-forget : on n'attend pas la réponse pour fluidifier l'UI
+    markAlertAsRead(alert.id).catch(console.error)
 
+    const nextIndex = currentAlertIndex+1
     if (nextIndex < alerts.length) {
       setCurrentAlertIndex(nextIndex); // alerte suivante
     } else {
