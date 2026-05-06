@@ -1,22 +1,52 @@
-import type { Transaction } from '../types/transaction';
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}/transactions`;
 
-const BASE_URL = 'http://localhost:3007';
+export interface TransactionPayload {
+    amount: number;
+    date: string;
+    description: string;
+    idcategory: number;
+}
 
-export const transactionApi = {
-  getTransactions: async (): Promise<Transaction[]> => {
-    const response = await fetch(`${BASE_URL}/transactions`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include', 
+export interface Transaction {
+    id: number;
+    amount: number;
+    date: string;
+    description: string | null;
+    userId: number;
+    categoryId: number;
+    category: {
+        id: number;
+        name: string;
+        type: "EXPENSE" | "INCOME"
+    };
+}
+
+// GET transactions - toutes les transactions de l'utilisateur connecté
+
+export async function fetchTransactions():Promise<Transaction[]> {
+    const response = await fetch(API_URL, {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
     });
-
-    if (!response.ok) {
-      throw new Error('Erreur lors de la récupération des transactions');
+    if(!response.ok) {
+        throw new Error(`Erreur${response.status} : Impossible de récuperer les transactions`);
     }
+    return response.json();
+}
 
-    const data = await response.json();
-    return data;
-  }
-};
+// POST transactions - créer une transactions
+
+export async function createTransaction(data: TransactionPayload): Promise<Transaction> {
+    const response = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-type": "application/json" },
+        credentials:"include",
+        body: JSON.stringify(data),
+    });
+    if(!response.ok) {
+        throw new Error(`Erreur ${response.status} : Impossible de créer la transaction.`);
+    }
+    return response.json()
+
+}

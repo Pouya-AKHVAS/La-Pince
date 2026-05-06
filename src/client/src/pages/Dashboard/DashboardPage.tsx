@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { transactionApi } from '../../services/transactionApi';
+import { fetchTransactions } from '../../services/transactionApi';
 import type { Transaction } from '../../types/transaction';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, 
@@ -33,10 +33,10 @@ export default function DashboardPage() {
      * Au chargement du composant, on appelle notre service API.
      */
     useEffect(() => {
-        const fetchTransactions = async () => {
+        const loadTransactions = async () => {
             try {
                 setLoading(true);
-                const data = await transactionApi.getTransactions();
+                const data = await fetchTransactions();
                 setTransactions(data);
             } catch (err) {
                 // Si l'API échoue (ex: serveur éteint), on log l'erreur

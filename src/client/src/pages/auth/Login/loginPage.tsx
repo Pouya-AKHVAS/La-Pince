@@ -1,12 +1,16 @@
 import { useState } from "react";
-import { loginUser, type LoginCredentials } from "../../../services/authApi";
+import { loginUser, fetchCurrentUser, type LoginCredentials } from "../../../services/authApi";
 import LoginForm from "../../../components/auth/LoginForm";
 import Footer from "../../../components/Footer/footer";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext";
 
 /**
  * Page de Connexion - Isolation Totale Desktop/Mobile
  */
 export default function LoginPage() {
+  const { login } = useAuth();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -14,10 +18,10 @@ export default function LoginPage() {
     setIsLoading(true);
     setError(null);
     try {
-      // Les cookies sont gérés automatiquement par le navigateur car credentials: "include" est utilisé dans authApi
       await loginUser(credentials);
-      // Redirection vers le dashboard, ce qui déclenchera la vérification de session dans AuthContext
-      window.location.href = "/dashboard";
+      const user = await fetchCurrentUser();
+      login(user);
+      navigate("/accueil");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Une erreur est survenue");
     } finally {
@@ -48,9 +52,25 @@ export default function LoginPage() {
         </div>
         <img
           src="/WEBP/Desktop/Lapince-Logo-Desktop.webp"
-          className="absolute top-10 left-15 w-24 md:w-36 lg:w-60 z-50 transition-all"
+          className="absolute top-10 left-15 w-24 lg:w-60 z-50 transition-all"
           alt="Logo"
         />
+
+        {/* Texte contextuel — même style que la landing page */}
+        <div className="absolute z-50 left-0 w-full md:pl-14 lg:pl-16 pointer-events-none pt-20">
+          <header className="max-w-[700px] md:mt-56 shrink-0 text-left md:pl-28">
+            <h2 className="text-[50px] lg:text-[65px] font-medium leading-[0.9] tracking-tighter text-[#002b49]">
+              Content de
+              <br />
+              vous revoir.
+            </h2>
+            <p className="text-[17px] lg:text-[21px] font-normal text-[#002b49] opacity-90 mt-6 max-w-[450px] leading-snug">
+              <span className="font-bold">La Pince,</span> vos finances vous attendaient.
+              <br />
+              Reprenez là où vous en étiez.
+            </p>
+          </header>
+        </div>
       </div>
 
       {/* ------------------------------------------------------------ */}
@@ -82,9 +102,6 @@ export default function LoginPage() {
             <h1 className="text-[35px] font-black italic uppercase leading-none">
               Connexion
             </h1>
-            <p className="text-[13px] font-bold opacity-90 mt-2 text-[#002b49]">
-              Accédez à votre compte sans prise de tête.
-            </p>
           </header>
 
           <section className="w-full max-w-[360px] bg-white/25 backdrop-blur-3xl rounded-[2rem] p-6 shadow-2xl border border-white/40 mb-6">
@@ -95,24 +112,15 @@ export default function LoginPage() {
             />
           </section>
 
-          <p className="text-xs font-bold">
-            Pas encore de compte ?{" "}
-            <a href="/register" className="underline ml-1">
-              S'inscrire
-            </a>
-          </p>
         </div>
       </div>
 
       {/* --- B. CONTENU DESKTOP (Réglages indépendants) --- */}
       <div className="hidden md:flex absolute inset-0 z-40 flex-col items-center justify-center scrollbar-hide">
         <header className="text-center mb-12">
-          <h1 className="text-[50px] lg:text-[60x] font-black italic uppercase leading-none tracking-tighter">
+          <h1 className="text-[50px] lg:text-[60px] font-black uppercase leading-none tracking-tighter">
             Connexion
           </h1>
-          <p className="text-[18px] lg:text-[20px] font-bold opacity-90 mt-4">
-            Accédez à votre compte sans prise de tête.
-          </p>
         </header>
 
         <section className="w-full max-w-[440px] bg-white/25 backdrop-blur-3xl rounded-[2.5rem] p-10 shadow-2xl border border-white/40 mb-10">
@@ -123,12 +131,6 @@ export default function LoginPage() {
           />
         </section>
 
-        <p className="text-sm font-bold">
-          Pas encore de compte ?{" "}
-          <a href="/register" className="underline ml-1">
-            S'inscrire
-          </a>
-        </p>
       </div>
 
       {/* ------------------------------------------------------------ */}

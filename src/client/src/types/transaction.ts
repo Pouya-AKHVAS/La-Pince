@@ -1,16 +1,12 @@
-export interface Category {
-  id: number;
-  name: string;
-  type: 'INCOME' | 'EXPENSE';
-  color?: string;
-  icon?: string;
-}
-
-export interface Transaction {
+export type Transaction = {
   id: number;
   amount: number;
   date: string;
-  description: string;
-  idcategory: number;
-  category: Category;
-}
+  description: string | null;
+  categoryId: number;
+  category: {
+    id: number;
+    name: string;
+    type: "EXPENSE" | "INCOME";
+  };
+};
