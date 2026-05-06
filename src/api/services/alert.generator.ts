@@ -29,7 +29,6 @@ export const generateBudgetAlert = async (budgetId: number, userId: number) => {
   const budget = await prisma.budget.findFirst({
     where: { id: budgetId, userId },
     include: {
-      transactions: true,
       category: true,
     },
   });
@@ -38,9 +37,12 @@ export const generateBudgetAlert = async (budgetId: number, userId: number) => {
   if (!budget) return null;
 
   // 2. Calcul du total dépensé
-  const spent = budget.transactions.reduce(
+  const transactionsForCategory = await prisma.transaction.findMany({
+    where: { userId, categoryId: budget.category.id },
+  });
+  const spent = transactionsForCategory.reduce(
     (sum: number, t: { amount: any }) => sum + Number(t.amount),
-    0
+    0,
   );
 
   // 3. Si le budget n'est pas dépassé → aucune alerte

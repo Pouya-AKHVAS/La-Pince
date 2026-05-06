@@ -9,7 +9,7 @@ export async function fetchAlerts(): Promise<Alert[]> {
   });
 
   if (!response.ok) {
-    throw new Error("Erreur `${response.status}` en chargeant les alertes");
+    throw new Error(`Erreur ${response.status} en chargeant les alertes`);
   }
 
   return response.json();

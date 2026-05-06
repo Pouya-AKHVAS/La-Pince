@@ -6,7 +6,7 @@ export const createBudgetSchema = z.object({
     .number()
     .positive("Le montant doit être positif"),
 
-  period: z.litteral(["weekly", "monthly", "custom"], {
+  period: z.enum(["weekly", "monthly", "custom"], {
     message: "La période doit être 'weekly', 'monthly' ou 'custom'",
   }),
 
