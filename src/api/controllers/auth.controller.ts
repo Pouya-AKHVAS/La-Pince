@@ -59,7 +59,13 @@ export async function register(req: Request, res: Response) {
     },
   });
 
-  // Tout s'est bien passé : on retourne un 201 (ressource créée) avec les infos du nouvel utilisateur
+  // Générer les tokens et poser les cookies comme pour le login
+  const { accessToken, refreshToken } = generateAuthTokens(user as unknown as User);
+  await replaceRefreshTokenInDatabase(refreshToken, user as unknown as User);
+  setAccessTokenCookie(res, accessToken);
+  setRefreshTokenCookie(res, refreshToken);
+  setSessionIndicatorCookie(res, accessToken);
+
   res.status(201).json({ message: "Inscription réussie", user });
 }
 
@@ -104,6 +110,7 @@ await replaceRefreshTokenInDatabase(refreshToken, user);
 
 setAccessTokenCookie(res, accessToken);
 setRefreshTokenCookie(res, refreshToken);
+setSessionIndicatorCookie(res, accessToken);
 
 // Renvoyer les token vers l'utilisateur
 res.json({
@@ -135,6 +142,17 @@ function setAccessTokenCookie(res: Response, accessToken: Token) {
   });
 }
 
+function setSessionIndicatorCookie(res: Response, accessToken: Token) {
+  // Cookie lisible par JS (non-httpOnly) — contient uniquement un flag, aucune donnée sensible.
+  // Permet au frontend de savoir si une session existe sans faire d'appel API inutile.
+  res.cookie("sessionExists", "1", {
+    httpOnly: false,
+    secure: config.isProd,
+    sameSite: config.isProd ? "none" : "lax",
+    maxAge: accessToken.expiresIn,
+  });
+}
+
 function setRefreshTokenCookie(res: Response, refreshToken: Token) {
   res.cookie("refreshToken", refreshToken.token, {
     httpOnly: true, // Le cookie n'est pas accessible via JavaScript, ce qui protège contre les attaques XSS
@@ -146,13 +164,13 @@ function setRefreshTokenCookie(res: Response, refreshToken: Token) {
     // Comme en local secure est false, sameSite="none" faisait crasher le cookie. Solution : En local, on utilise "lax" (qui accepte le HTTP), et en prod "none".
     sameSite: config.isProd ? "none" : "lax",
     maxAge: refreshToken.expiresIn,
-    path: "/auth/refresh",
+    path: config.isProd ? "/api/auth/refresh" : "/auth/refresh",
   });
 }
 
 export async function refresh(req: Request, res: Response) {
   // Vérification d'abord dans les cookies, sinon dans le body (au cas où le client ne gère pas les cookies, en dev par exemple)
-  const refreshToken = req.cookies.refreshToken || req.body.refreshToken; 
+  const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
 
   if (!refreshToken) {
     throw new BadRequestError("Refresh token manquant");
@@ -179,15 +197,16 @@ export async function refresh(req: Request, res: Response) {
   //Mettre à jour les cookies
   setAccessTokenCookie(res, newTokens.accessToken);
   setRefreshTokenCookie(res, newTokens.refreshToken);
+  setSessionIndicatorCookie(res, newTokens.accessToken);
 
-  //Renvoyer les nouveaux tokens, le refresh token est dans le cookie, c'est plus sécurisé
   res.json({ accessToken: newTokens.accessToken.token });
 }
 
 
 export async function logoutUser(req: Request, res: Response) {
   res.clearCookie("accessToken");
-  res.clearCookie("refreshToken", { path: "/auth/refresh" });
+  res.clearCookie("refreshToken", { path: config.isProd ? "/api/auth/refresh" : "/auth/refresh" });
+  res.clearCookie("sessionExists");
   if (req.user) {
     await prisma.refreshToken.deleteMany({ where: { userId: req.user.id } });
   }

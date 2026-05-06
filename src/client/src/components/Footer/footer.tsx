@@ -28,16 +28,16 @@ export default function Footer({
    */
   const allAvailableItems: NavItem[] = [
     {
-      id: "home",
-      label: "Accueil",
+      id: "landingpage",
+      label: "LandingPage",
       href: "/",
-      src: "/WEBP/Icones/Lapince-home-icon.webp",
+      src: "/WEBP/Icones/Lapince-landingpage-icon.webp",
     },
     {
       id: "params",
-      label: "Parameters",
-      href: "/parameters",
-      src: "/WEBP/Icones/Lapince-dashboard-icon.webp",
+      label: "Paramètres",
+      href: "/parametres",
+      src: "/WEBP/Icones/Lapince-profil-icon.webp",
     },
     {
       id: "dashboard",
@@ -48,8 +48,8 @@ export default function Footer({
     {
       id: "transactions",
       label: "Transactions",
-      href: "",
-      src: "/WEBP/Icones/Lapince-transactions-icon.webp",
+      href: "/accueil",
+      src: "/WEBP/Icones/Lapince-home-icon.webp",
     },
   ];
 
