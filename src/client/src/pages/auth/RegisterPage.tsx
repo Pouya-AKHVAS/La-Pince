@@ -8,6 +8,7 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
   const [photo, setPhoto] = useState<File | null>(null);
+  
 
   const handleSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
@@ -144,6 +145,8 @@ export default function RegisterPage() {
             error={error}
           />
         </section>
+
+
 
         {/* Lien de redirection */}
         <p className="text-sm font-bold shrink-0 mb-10">
