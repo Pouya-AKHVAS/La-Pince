@@ -1,77 +1,75 @@
-// Ce fichier contient le contexte global d'authentification de l'application. 
-// Il gère l'état de l'utilisateur connecté, les fonctions de connexion et de déconnexion, 
+// Ce fichier contient le contexte global d'authentification de l'application. Il gère l'état de l'utilisateur connecté, les fonctions de connexion et de déconnexion,
 // ainsi que la vérification de session au démarrage de l'application.
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-// CORRECTION : On importe AuthUser au lieu de AuthResponse
-import { fetchCurrentUser, fetchLogout } from '../services/authApi';
+import { createContext, useContext, useState, useEffect } from 'react';
+import type { ReactNode } from 'react';
+import { fetchCurrentUser, fetchLogout, refreshSession } from '../services/authApi';
 import type { AuthUser } from '../types/auth';
 
 interface AuthContextType {
-  // CORRECTION : On utilise directement AuthUser
   user: AuthUser | null;
   login: (userData: AuthUser) => void;
   logout: () => void;
   isAuthenticated: boolean;
-  isInitializing: boolean; // Ajout d'un état de chargement initial
+  isInitializing: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // CORRECTION : Le state utilise AuthUser
   const [user, setUser] = useState<AuthUser | null>(null);
-  
   // Empêche l'affichage de l'app tant qu'on ne sait pas si l'utilisateur est connecté
-  const [isInitializing, setIsInitializing] = useState(true); 
+  const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
-    // Au démarrage de l'app (F5), on interroge le back-end avec le cookie caché
     const checkSession = async () => {
+      // Si le cookie indicateur est absent, aucune session n'existe → pas d'appel API inutile
+      if (!document.cookie.includes("sessionExists=1")) {
+        setIsInitializing(false);
+        return;
+      }
+
       try {
-        // On demande au back-end "Qui est cet utilisateur ?"
         const currentUser = await fetchCurrentUser();
-        // Le serveur a répondu OK, on met à jour le state avec les infos de l'utilisateur
-        setUser(currentUser); 
-      } catch (error) {
-        setUser(null);
+        setUser(currentUser);
+      } catch {
+        try {
+          await refreshSession();
+          const currentUser = await fetchCurrentUser();
+          setUser(currentUser);
+        } catch {
+          setUser(null);
+        }
       } finally {
-        setIsInitializing(false); // Fini de charger, on peut afficher l'app
+        setIsInitializing(false);
       }
     };
-
     checkSession();
   }, []);
 
-  // CORRECTION : Le paramètre attend un AuthUser
   const login = (userData: AuthUser) => {
-    // Le token est dans le cookie, on sauvegarde juste l'utilisateur dans l'état React
     setUser(userData);
   };
 
   const logout = async () => {
     try {
-      // Il faut appeler la route de déconnexion du back-end pour qu'il détruise le cookie
-      await fetchLogout(); 
+      await fetchLogout();
     } finally {
-      // Quoi qu'il arrive, on vide l'état React pour mettre à jour l'affichage
       setUser(null);
     }
   };
 
   return (
     <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user, isInitializing }}>
-      {/* On n'affiche les enfants que si l'initialisation est terminée */}
       {!isInitializing && children}
     </AuthContext.Provider>
   );
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext); // Permet de consommer le contexte dans les composants enfants
-  if (context === undefined) { 
-    // Si le contexte n'est pas défini, cela signifie que le hook est utilisé en dehors d'un AuthProvider
-    throw new Error("useAuth doit être utilisé à l'intérieur d'un AuthProvider"); 
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error("useAuth doit être utilisé à l'intérieur d'un AuthProvider");
   }
   return context;
 }
