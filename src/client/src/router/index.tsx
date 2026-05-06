@@ -42,15 +42,15 @@ export const router = createBrowserRouter([
             element: <ParametrePage />,
           },
           {
+            path: "/dashboard",
+            element: <DashboardPage />,
+          },
+          {
             path: "/mentions-legales",
             element: <div>Page des mentions légales</div>,
           },
         ],
       },
-      {
-        path : "/dashboard",
-        element: <DashboardPage />
-      }
     ],
   },
 ]);
