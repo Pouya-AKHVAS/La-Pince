@@ -244,7 +244,7 @@ export default function DashboardPage() {
                   {/* Liste des catégories */}
                   {categories
                     .filter(c => filterType === "ALL" || c.type === filterType)
-                    .map(cat => (
+                    .map(cat => ( // Filtrer les catégories selon le type sélectionné
                       <button
                         key={cat.id}
                         onClick={() => toggleCategory(cat.id)}
