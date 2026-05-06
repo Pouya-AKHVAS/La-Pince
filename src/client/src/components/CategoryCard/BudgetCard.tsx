@@ -1,8 +1,13 @@
-import { useState, useEffect } from "react"; // 1. Ajout de useEffect
+
+// 1. Ajout de useEffect
+import { useState, useEffect } from "react"; 
+
 import CategorySelect from "./CategorySelect";
 // 2. Importation du service et du type
 import { fetchCategories } from "../../services/categoryApi.js"; 
 import type { Category } from "../../types/category.js";
+
+import { createBudget } from "../../services/budgetApi.js";
 
 export default function BudgetCard() {
   // 3. Remplacement du state par un tableau d'objets Category
@@ -10,6 +15,12 @@ export default function BudgetCard() {
   const [categorie, setCategorie] = useState("");
   const [montant, setMontant] = useState("");
   const [mois, setMois] = useState("");
+
+
+  //Budget
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
     // 4. Chargement des données au montage du composant
   useEffect(() => {
@@ -24,6 +35,40 @@ export default function BudgetCard() {
     }
     loadCategories();
   }, []);
+
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null)
+
+    const categoryId = parseInt(categorie);
+    const amount = parseFloat(montant);
+
+    if (!categoryId || isNaN(amount) || amount <=0) {
+      setError("Veuillez remplir tous les champs correctement.");
+      return;
+    }
+
+  setIsLoading(true);
+  try {
+    await createBudget({
+      limit_amount: amount,
+      period: "monthly",   // correspond au sélecteur mois du formulaire
+      id_category: categoryId,
+    });
+    // Réinitialiser le formulaire
+    setMontant("");
+    setMois("");
+    setCategorie("");
+    // Si la page parent doit rafraîchir sa liste :
+    // onBudgetCreated?.();
+  } catch (err) {
+    setError("Impossible de créer le budget. Réessaie.");
+    console.error(err);
+  } finally {
+    setIsLoading(false);
+  }
+}
 
   return (
     <div className="relative w-44 h-44 md:w-56 md:h-56 rounded-full bg-[#E06B56] flex flex-col items-center justify-center gap-1 md:gap-2 shadow-xl shrink-0">
@@ -51,11 +96,7 @@ export default function BudgetCard() {
       </p>
 
       {/* Formulaire */}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          console.log("Budget:", { categorie, montant, mois });
-        }}
+      <form onSubmit={handleSubmit}
         className="flex flex-col items-center gap-1 w-full px-5 md:px-10"
       >
         <div className="w-full flex items-center h-5 md:h-6 rounded-full bg-white/70 px-3 gap-1">
