@@ -34,7 +34,7 @@ export default function DashboardPage() {
   // --- ÉTATS STRUCTURELS ---
   const footerRef = useRef<HTMLElement>(null);
   const [footerHeight, setFooterHeight] = useState(0); // Ajuste le padding bottom de la page
-  
+
   // --- ÉTATS DES DONNÉES ---
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -92,12 +92,12 @@ export default function DashboardPage() {
     return transactions.filter((t) => {
       const matchesType = filterType === "ALL" || t.category.type === filterType;
       const matchesSearch = t.description?.toLowerCase().includes(search.toLowerCase());
-      
+
       const tDate = new Date(t.date).getTime();
       const start = startDate ? new Date(startDate).getTime() : -Infinity;
       const end = endDate ? new Date(endDate).getTime() : Infinity;
       const matchesDate = tDate >= start && tDate <= end;
-      
+
       const matchesCategory = selectedCategoryIds.length === 0 || selectedCategoryIds.includes(t.category.id);
 
       return matchesType && matchesSearch && matchesDate && matchesCategory;
@@ -108,7 +108,7 @@ export default function DashboardPage() {
    * Gère l'ajout/suppression d'une catégorie dans la multi-sélection.
    */
   const toggleCategory = (id: number) => {
-    setSelectedCategoryIds(prev => 
+    setSelectedCategoryIds(prev =>
       prev.includes(id) ? prev.filter(catId => catId !== id) : [...prev, id]
     );
   };
@@ -117,33 +117,33 @@ export default function DashboardPage() {
   const chartData = useMemo(() => {
     if (transactions.length === 0) return MOCK_DATA;
     const monthlyMap: Record<string, { name: string, income: number, expense: number }> = {};
-    
+
     // Tri chronologique avant de grouper par mois
     [...transactions]
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       .forEach(t => {
         const month = new Date(t.date).toLocaleString('fr-FR', { month: 'short' });
         if (!monthlyMap[month]) monthlyMap[month] = { name: month, income: 0, expense: 0 };
-        
+
         const amount = Number(t.amount);
         if (t.category.type === 'INCOME') monthlyMap[month].income += amount;
         else monthlyMap[month].expense -= amount; // On affiche les dépenses en négatif
       });
-    
+
     return Object.values(monthlyMap);
   }, [transactions]);
 
   // --- CALCUL DES STATISTIQUES GLOBALES ---
   const stats = useMemo(() => {
     if (transactions.length === 0) return { income: 4500.50, expense: 2300.20, balance: 2200.30 };
-    
-    const income = transactions.reduce((acc, t) => 
+
+    const income = transactions.reduce((acc, t) =>
       t.category.type === 'INCOME' ? acc + Number(t.amount) : acc, 0
     );
-    const expense = transactions.reduce((acc, t) => 
+    const expense = transactions.reduce((acc, t) =>
       t.category.type === 'EXPENSE' ? acc + Number(t.amount) : acc, 0
     );
-    
+
     return { income, expense, balance: income - expense };
   }, [transactions]);
 
@@ -162,7 +162,7 @@ export default function DashboardPage() {
 
   return (
     <main className="fixed inset-0 w-full h-full bg-[#cbd5e1] overflow-hidden font-sans text-[#002b49]">
-      
+
       {/* Background avec images décoratives floutées */}
       <img
         src="/WEBP/Desktop/Lapince-Hero-Background-Desktop.webp"
@@ -177,8 +177,8 @@ export default function DashboardPage() {
       <img src="/WEBP/Desktop/Lapince-Logo-Desktop.webp" className="absolute top-10 left-15 w-24 lg:w-60 z-50 transition-all hidden md:block" alt="Logo" />
 
       {/* Contenu principal défilable */}
-      <div 
-        className="relative z-20 flex flex-col h-full overflow-y-auto scrollbar-hide" 
+      <div
+        className="relative z-20 flex flex-col h-full overflow-y-auto scrollbar-hide"
         style={{ paddingBottom: footerHeight + 40 }}
       >
         {/* Titre de la page */}
@@ -190,7 +190,7 @@ export default function DashboardPage() {
         </header>
 
         <div className="max-w-6xl mx-auto w-full px-6 space-y-8">
-          
+
           {/* Rendu des 3 cartes de totaux */}
           <StatsCards stats={stats} />
 
@@ -199,7 +199,7 @@ export default function DashboardPage() {
 
           {/* Section Liste des transactions avec ses propres filtres */}
           <section className="bg-white/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/40 mb-10">
-            <TransactionFilters 
+            <TransactionFilters
               search={search}
               onSearchChange={setSearch}
               filterType={filterType}
@@ -213,7 +213,7 @@ export default function DashboardPage() {
               onToggleCategory={toggleCategory}
               onClearCategories={() => setSelectedCategoryIds([])}
             />
-            
+
             <TransactionTable transactions={filteredTransactions} />
           </section>
         </div>
@@ -221,10 +221,10 @@ export default function DashboardPage() {
 
       {/* Popups d'alertes (BNPL, dépassements, etc.) */}
       {currentAlert && <AlertPopup key={currentAlert.id} alert={currentAlert} onClose={handleCloseAlert} />}
-      
+
       {/* Footer fixe en bas */}
       <footer ref={footerRef} className="absolute bottom-0 left-0 w-full z-[60]">
-        <Footer showIcons activeIds={["landingpage", "params",  "transactions"]} />
+        <Footer showIcons activeIds={["landingpage", "params", "transactions"]} />
       </footer>
     </main>
   );
