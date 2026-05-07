@@ -14,8 +14,11 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [attemptCount, setAttemptCount] = useState(0); //compteur
+  const [isBlocked, setIsBlocked] = useState(false)   //bloqué si necessaire
 
   const handleLogin = async (credentials: LoginCredentials) => {
+    if (isBlocked) return; // si le user est bloqué, il ne se passe rien s'il clique sur le bouton
     setIsLoading(true);
     setError(null);
     try {
@@ -23,14 +26,21 @@ export default function LoginPage() {
       const user = await fetchCurrentUser();
 
       setSuccessMessage("Connexion réussie !");
-
       
       setTimeout(() => {
       login(user);
       navigate("/accueil");
       }, 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Une erreur est survenue");
+      const newCount = attemptCount + 1
+      setAttemptCount(newCount)
+
+    if (newCount >= 3) {  //limite de tentative à 3
+    setIsBlocked(true)
+    setError("Trop de tentatives, veuillez réessayer plus tard.")
+    } else {
+    setError(`Mot de passe incorrect, ${3 - newCount} tentative(s) restante(s).`)
+}
     } finally {
       setIsLoading(false);
     }

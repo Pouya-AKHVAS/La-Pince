@@ -34,7 +34,7 @@ export default function LoginForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Affichage de l'erreur globale renvoyée par le parent */}
       {error && (
-        <p className="text-red-600 text-[11px] text-center font-bold italic bg-red-100/50 py-1 rounded-full">
+        <p className="text-red-600 text-[14px] text-center font-bold italic bg-red-100/50 py-1 rounded-full">
           {error}
         </p>
       )}
