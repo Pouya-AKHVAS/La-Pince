@@ -13,14 +13,24 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
   const [photo, setPhoto] = useState<File | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null); // chaîne de caractère ou null 
 
   const handleSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
     setError(null);
+
     try {
       const user = await registerUser(data);
-      login(user);            
+    
+
+      setSuccessMessage("Inscription réalisée avec succès !");
+
+      
+      setTimeout(() => {
+        login(user);
       navigate("/accueil");
+    }, 2000);
+
     } catch (err) {
       setError(err as ApiError);
     } finally {
@@ -142,6 +152,11 @@ export default function RegisterPage() {
           </label>
         </div>
 
+
+
+
+
+
         {/* Cadre du Formulaire */}
         <section className="w-full max-w-[440px] bg-white/20 backdrop-blur-3xl rounded-[2.5rem] p-6 md:p-10 shadow-2xl border border-white/30 mb-8 shrink-0 relative">
           <RegisterForm
@@ -151,6 +166,15 @@ export default function RegisterPage() {
           />
         </section>
 
+   
+             {/* Message suivant l'inscription */}
+      {successMessage && (
+  <p className="text-sm font-bold text-black-700 mb-10">
+    {successMessage}
+  </p>
+      )}   
+
+
         {/* Lien de redirection */}
         <p className="text-sm font-bold shrink-0 mb-10">
           Déjà un compte ?{" "}
@@ -158,7 +182,8 @@ export default function RegisterPage() {
             Se connecter
           </a>
         </p>
-      </div>
+        </div>
+
 
       {/* ------------------------------------------------------------ */}
       {/* 4. FOOTER                                                    */}
@@ -166,6 +191,9 @@ export default function RegisterPage() {
       <footer className="absolute bottom-0 left-0 w-full z-50">
         <Footer showIcons={true} />
       </footer>
+
     </main>
   );
 }
+  
+
