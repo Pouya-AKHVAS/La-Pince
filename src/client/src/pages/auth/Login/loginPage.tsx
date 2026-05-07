@@ -1,5 +1,9 @@
 import { useState } from "react";
-import { loginUser, fetchCurrentUser, type LoginCredentials } from "../../../services/authApi";
+import {
+  loginUser,
+  fetchCurrentUser,
+  type LoginCredentials,
+} from "../../../services/authApi";
 import LoginForm from "../../../components/auth/LoginForm";
 import Footer from "../../../components/Footer/footer";
 import { useNavigate } from "react-router-dom";
@@ -13,6 +17,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const handleLogin = async (credentials: LoginCredentials) => {
     setIsLoading(true);
@@ -20,8 +25,11 @@ export default function LoginPage() {
     try {
       await loginUser(credentials);
       const user = await fetchCurrentUser();
-      login(user);
-      navigate("/accueil");
+      setSuccessMessage("Connexion réussie !");
+      setTimeout(() => {
+        login(user);
+        navigate("/accueil");
+      }, 2000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Une erreur est survenue");
     } finally {
@@ -65,7 +73,8 @@ export default function LoginPage() {
               vous revoir.
             </h2>
             <p className="text-[17px] lg:text-[21px] font-normal text-[#002b49] opacity-90 mt-6 max-w-[450px] leading-snug">
-              <span className="font-bold">La Pince,</span> vos finances vous attendaient.
+              <span className="font-bold">La Pince,</span> vos finances vous
+              attendaient.
               <br />
               Reprenez là où vous en étiez.
             </p>
@@ -104,12 +113,18 @@ export default function LoginPage() {
             </h1>
           </header>
 
-          <section className="w-full max-w-[360px] bg-white/25 backdrop-blur-3xl rounded-[2rem] p-6 shadow-2xl border border-white/40 mb-6">
-            <LoginForm
-              onSubmit={handleLogin}
-              isLoading={isLoading}
-              error={error}
-            />
+          <section className="w-full max-w-[360px] min-h-[310px] flex flex-col justify-center bg-white/25 backdrop-blur-3xl rounded-[2rem] p-6 shadow-2xl border border-white/40 mb-6">
+            {successMessage ? (
+              <p className="text-center text-xl font-black text-[#002b49]">
+                ✓ {successMessage}
+              </p>
+            ) : (
+              <LoginForm
+                onSubmit={handleLogin}
+                isLoading={isLoading}
+                error={error}
+              />
+            )}
           </section>
 
         </div>
@@ -123,12 +138,18 @@ export default function LoginPage() {
           </h1>
         </header>
 
-        <section className="w-full max-w-[440px] bg-white/25 backdrop-blur-3xl rounded-[2.5rem] p-10 shadow-2xl border border-white/40 mb-10">
-          <LoginForm
-            onSubmit={handleLogin}
-            isLoading={isLoading}
-            error={error}
-          />
+        <section className="w-full max-w-[440px] min-h-[340px] flex flex-col justify-center bg-white/25 backdrop-blur-3xl rounded-[2.5rem] p-10 shadow-2xl border border-white/40 mb-10">
+          {successMessage ? (
+            <p className="text-center text-xl font-black text-[#002b49]">
+              ✓ {successMessage}
+            </p>
+          ) : (
+            <LoginForm
+              onSubmit={handleLogin}
+              isLoading={isLoading}
+              error={error}
+            />
+          )}
         </section>
 
       </div>

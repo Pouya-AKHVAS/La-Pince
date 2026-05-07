@@ -117,15 +117,16 @@ export default function RegisterForm({
    
     <button
       type="button"
-      onClick={() =>
-        field.id === "password"
-        
-          ? setShowPassword(!showPassword)
-          : setShowConfirm(!showConfirm)
+      onMouseDown={() =>
+        field.id === "password" ? setShowPassword(true) : setShowConfirm(true)
       }
-      
+      onMouseUp={() =>
+        field.id === "password" ? setShowPassword(false) : setShowConfirm(false)
+      }
+      onMouseLeave={() =>
+        field.id === "password" ? setShowPassword(false) : setShowConfirm(false)
+      }
     >
-      {/* Si le mot de passe est visible , l'oeil sera fermé pour le masquer et inversement */}
       {field.id === "password" ? (
         showPassword ? <EyeOff size={16} /> : <Eye size={16} />
       ) : (
