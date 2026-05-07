@@ -139,20 +139,23 @@ export const getBudgetStatus = async (budgetId: number, userId: number) => {
 };
 
 // -------------------------------------------------------------
-// 7. Statistiques budgétaires Mensuelles
+// 7. Statistiques Budgétaires (Hybride : Mensuel ou Global)
+// -------------------------------------------------------------
+export const getBudgetMonthlyStats = async (userId: number, month?: number, year?: number) => {
+  // 1. Préparation du filtre de date (optionnel)
+  // Si month et year sont fournis, on crée une fenêtre temporelle.
+  // Sinon, on laisse le filtre vide pour avoir une vue "Globale" (All-time).
+  let dateFilter = {};
+  const isHistoricalRequest = month !== undefined && year !== undefined;
 
-export const getBudgetMonthlyStats =async (userId: number, month?: number, year?: number) => {
-  const now = new Date();
+  if (isHistoricalRequest) {
+    const targetMonth = month! - 1;
+    const startDate = new Date(year!, targetMonth, 1);
+    const endDate = new Date(year!, targetMonth + 1, 0, 23, 59, 59);
+    dateFilter = { gte: startDate, lte: endDate };
+  }
 
-  // Gestion de la période (Par défaut : mois/année en cours) 
-  const targetMonth = month !== undefined ? month - 1 : now.getMonth();
-  const targetYear = year || now.getFullYear(); 
-
-  // Définition des bornes temporelles (du 1er au dernier jour du mois) 
-  const startDate = new Date(targetYear, targetMonth, 1);
-  const endDate = new Date(targetYear, targetMonth + 1, 0, 23, 59, 59); // dernier jour du mois à 23:59:59
-  
-  // 1. Récupérer tous les budgets de l'utilisateur 
+  // 2. Récupération des budgets de l'utilisateur
   const budgets = await prisma.budget.findMany({
     where: { userId },
     include: {
@@ -160,44 +163,40 @@ export const getBudgetMonthlyStats =async (userId: number, month?: number, year?
     },
   });
 
- //  2. Calcul du réel pour chaque budget 
- return await Promise.all(
-    budgets.map(async (budget : {
-      id: number;
-      limit_amount: number;
-      category: { name: string; color: string };
-    }) => {
-      // Choix technique : on filtre par budgetId et non par catégorie. 
-      // // Cela garantit que si une transaction de la même catégorie n'est pas liée par l'utilisateur ( choix d'un "extra"), elle n'est PAS comptée ici. 
+  // 3. Calcul du réel pour chaque budget via Promise.all (parallélisation)
+  return await Promise.all(
+    budgets.map(async (budget: any) => {
+      // Choix technique : On filtre par budgetId pour respecter le "Lien Manuel".
+      // Les transactions "extras" (sans budgetId) sont automatiquement ignorées.
       const aggregateResult = await prisma.transaction.aggregate({
         where: {
           userId,
-          budgetId: budget.id, // Filtrer par budgetId pour ne compter que les transactions liées à ce budget
-          date: {
-            gte: startDate, // date >= début du mois
-            lte: endDate, // date <= fin du mois
-          },
+          budgetId: budget.id,
+          ...(isHistoricalRequest ? { date: dateFilter } : {}), // Filtre date conditionnel
         },
         _sum: {
           amount: true,
-        },    
-          });
-        const spent = aggregateResult._sum.amount || 0; // Si aucune transaction, le total est 0
+        },
+      });
 
-        // Calcul du pourcentage réel (peut dépasser 100% pour la logique de couleur)
-        const realPercent = (budget.limit_amount > 0) ? (spent / budget.limit_amount) * 100 : 0;
-        return {
-          id: budget.id,
-          categoryName: budget.category.name,
-          limit: budget.limit_amount,
-          color : budget.category.color,
-          limitAmount: budget.limit_amount,
-          spentAmount: spent,
-          remainingAmount: Math.max(budget.limit_amount - spent, 0),
-          percent: Math.min(realPercent, 100), // Plafonné à 100 pour la barre UI
-          realPercent: realPercent,            // Vrai chiffre pour l'alerte (ex: 115%)
-          period: { month: targetMonth + 1, year: targetYear },
-        };
+      const spent = Number(aggregateResult._sum.amount) || 0;
+      const limit = Number(budget.limit_amount);
+      
+      // Calcul du pourcentage réel (peut dépasser 100% pour la logique de couleur)
+      const realPercent = limit > 0 ? (spent / limit) * 100 : 0;
+
+      return {
+        id: budget.id,
+        categoryName: budget.category.name,
+        icon: budget.category.icon,
+        color: budget.category.color,
+        limitAmount: limit,
+        spentAmount: spent,
+        remainingAmount: Math.max(limit - spent, 0),
+        percent: Math.min(realPercent, 100), // Plafonné pour l'affichage de la barre
+        realPercent: realPercent,            // Vrai chiffre (ex: 125%) pour l'analyse
+        period: isHistoricalRequest ? { month, year } : "global",
+      };
     })
   );
 };
