@@ -6,7 +6,7 @@
 // de la gestion des requêtes HTTP, rendant le code plus propre
 // et plus facile à maintenir.
 
-import { id } from "zod/locales";
+import { ca, id } from "zod/locales";
 import { prisma } from "../lib/prisma.js";
 
 // -------------------------------------------------------------
@@ -142,20 +142,17 @@ export const getBudgetStatus = async (budgetId: number, userId: number) => {
 // 7. Statistiques Budgétaires (Hybride : Mensuel ou Global)
 // -------------------------------------------------------------
 export const getBudgetMonthlyStats = async (userId: number, month?: number, year?: number) => {
-  // 1. Préparation du filtre de date (optionnel)
+  const now = new Date();
+  
   // Si month et year sont fournis, on crée une fenêtre temporelle.
-  // Sinon, on laisse le filtre vide pour avoir une vue "Globale" (All-time).
-  let dateFilter = {};
-  const isHistoricalRequest = month !== undefined && year !== undefined;
+  // Sinon, on utilise le mois et l'année en cours par défaut.
+  const targetMonth = month !== undefined ? month - 1 : now.getMonth();
+  const targetYear = year || now.getFullYear();
 
-  if (isHistoricalRequest) {
-    const targetMonth = month! - 1;
-    const startDate = new Date(year!, targetMonth, 1);
-    const endDate = new Date(year!, targetMonth + 1, 0, 23, 59, 59);
-    dateFilter = { gte: startDate, lte: endDate };
-  }
+  const startDate = new Date(targetYear, targetMonth, 1);
+  const endDate = new Date(targetYear, targetMonth + 1, 0, 23, 59, 59);
 
-  // 2. Récupération des budgets de l'utilisateur
+  // 1. Récupération des budgets de l'utilisateur
   const budgets = await prisma.budget.findMany({
     where: { userId },
     include: {
@@ -163,16 +160,18 @@ export const getBudgetMonthlyStats = async (userId: number, month?: number, year
     },
   });
 
-  // 3. Calcul du réel pour chaque budget via Promise.all (parallélisation)
+  // 2. Calcul du réel pour chaque budget via Promise.all
   return await Promise.all(
     budgets.map(async (budget: any) => {
-      // Choix technique : On filtre par budgetId pour respecter le "Lien Manuel".
-      // Les transactions "extras" (sans budgetId) sont automatiquement ignorées.
+      // On somme toutes les transactions de la même catégorie pour le mois cible
       const aggregateResult = await prisma.transaction.aggregate({
         where: {
           userId,
-          budgetId: budget.id,
-          ...(isHistoricalRequest ? { date: dateFilter } : {}), // Filtre date conditionnel
+          categoryId: budget.id_category, // Filtrage par catégorie
+          date: {
+            gte: startDate,
+            lte: endDate,
+          },
         },
         _sum: {
           amount: true,
@@ -182,7 +181,6 @@ export const getBudgetMonthlyStats = async (userId: number, month?: number, year
       const spent = Number(aggregateResult._sum.amount) || 0;
       const limit = Number(budget.limit_amount);
       
-      // Calcul du pourcentage réel (peut dépasser 100% pour la logique de couleur)
       const realPercent = limit > 0 ? (spent / limit) * 100 : 0;
 
       return {
@@ -193,11 +191,10 @@ export const getBudgetMonthlyStats = async (userId: number, month?: number, year
         limitAmount: limit,
         spentAmount: spent,
         remainingAmount: Math.max(limit - spent, 0),
-        percent: Math.min(realPercent, 100), // Plafonné pour l'affichage de la barre
-        realPercent: realPercent,            // Vrai chiffre (ex: 125%) pour l'analyse
-        period: isHistoricalRequest ? { month, year } : "global",
+        percent: Math.min(realPercent, 100),
+        realPercent: realPercent,
+        period: { month: targetMonth + 1, year: targetYear },
       };
     })
   );
 };
-

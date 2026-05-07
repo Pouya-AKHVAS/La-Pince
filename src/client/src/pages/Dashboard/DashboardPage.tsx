@@ -15,6 +15,7 @@ import { fetchAlerts, markAlertAsRead } from "../../services/alertApi";
 import { StatsCards } from "./components/StatsCards";
 import { MonthlyChart } from "./components/MonthlyChart";
 import TransactionSheet from "../../components/TransactionList/TransactionSheet";
+import BudgetProgressList from "../../components/Budget/BudgetProgressList";
 
 /**
  * Données de secours (Mock) pour le graphique si aucune donnée n'est présente en base.
@@ -169,6 +170,8 @@ export default function DashboardPage() {
 
           {/* Rendu du graphique Recharts */}
           <MonthlyChart data={chartData} />
+
+          <BudgetProgressList />
         </div>
       </div>
 
