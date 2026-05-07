@@ -21,6 +21,8 @@ export default function BudgetCard() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [messageSuccess, setMessageSuccess] = useState<string | null>(null);
+  
 
     // 4. Chargement des données au montage du composant
   useEffect(() => {
@@ -29,6 +31,7 @@ export default function BudgetCard() {
         const data = await fetchCategories();
         const expenseCategories = data.filter((cat) => cat.type === "EXPENSE");
         setCategories(expenseCategories);
+        
       } catch (error) {
         console.error("Erreur lors du chargement des catégories:", error);
       }
@@ -55,11 +58,14 @@ export default function BudgetCard() {
       limit_amount: amount,
       period: "monthly",   // correspond au sélecteur mois du formulaire
       id_category: categoryId,
+      
     });
     // Réinitialiser le formulaire
     setMontant("");
     setMois("");
     setCategorie("");
+    setMessageSuccess("Budget ajouté !");
+    setTimeout(() => setMessageSuccess(null), 3000);
     // Si la page parent doit rafraîchir sa liste :
     // onBudgetCreated?.();
   } catch (err) {
@@ -94,6 +100,16 @@ export default function BudgetCard() {
         <img src="/WEBP/Icones/Lapince-budget.webp" className="w-4 h-4 md:w-5 md:h-5 object-contain" alt="" />
         Budget
       </p>
+
+      {/* Message d'ajout de budget*/}
+
+      {messageSuccess && (
+  <p className="text-[8px] md:text-[9px] font-bold text-black-700 bg-white/80 px-2 py-0.5 rounded-full">
+    ✓ {messageSuccess}
+  </p>
+)}
+
+  
 
       {/* Formulaire */}
       <form onSubmit={handleSubmit}

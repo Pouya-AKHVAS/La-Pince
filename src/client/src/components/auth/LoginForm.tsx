@@ -3,7 +3,7 @@
 // C'est le composant enfant de LoginPage, il reçoit la fonction à appeler lors de la soumission du formulaire, ainsi que les états d'erreur et de chargement.
 import { useState, type FormEvent } from "react"; // Ajout de 'type' pour verbatimModuleSyntax
 import type { LoginCredentials } from "../../services/authApi";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 
 interface LoginFormProps {
   onSubmit: (credentials: LoginCredentials) => void; // La fonction à appeler quand le formulaire est soumis, avec les données du formulaire
@@ -18,6 +18,7 @@ export default function LoginForm({
 }: LoginFormProps) {
   const [email, setEmail] = useState(""); // On crée un état local pour chaque champ du formulaire, pour pouvoir les contrôler et les envoyer au parent lors de la soumission.
   const [password, setPassword] = useState(""); // Même chose pour le mot de passe
+  const [showPassword, setShowPassword] = useState(false); //Contrôle la visibilité du mot de passe (true = visible, false = masqué)
 
   /**
    * Utilisation de FormEvent avec le type générique HTMLFormElement
@@ -64,16 +65,29 @@ export default function LoginForm({
         >
           Mot de passe
         </label>
+        <div className="flex items-center gap-2">
         <input
           id="password"
-          type="password"
+          type={showPassword ? "text" : "password"}
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="mot de passe"
           className="w-full px-4 py-2.5 rounded-full bg-white/80 border-none text-[13px] shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-blue-500 text-[#002b49]"
           disabled={isLoading}
-        />
+          />
+
+          
+
+      <button
+      type="button"
+      onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#002b49]/60 hover:text-[#002b49] transition-colors"
+          >
+            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+          </button>
+  
+        </div>
       </div>
 
       <div className="flex justify-center pt-2">
