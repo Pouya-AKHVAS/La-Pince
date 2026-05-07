@@ -1,6 +1,6 @@
 export type Overview = {
     income: number;
-    expense: number;
+    expenses: number;
     balance: number;
 }
 

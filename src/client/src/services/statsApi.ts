@@ -11,7 +11,7 @@ export async function fetchOverview(): Promise<Overview> {
   return res.json();
 }
 
-export async function fetchMonthlyStats(): Promise<MonthlyEntry> {
+export async function fetchMonthlyStats(): Promise<MonthlyEntry[]> {
   const res = await fetch(`${BASE}/monthly`, {
     credentials: "include",
     cache: "no-store",

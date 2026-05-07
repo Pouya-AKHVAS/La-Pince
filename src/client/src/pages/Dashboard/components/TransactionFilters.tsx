@@ -1,5 +1,3 @@
-import type { Category } from "../../../types/category";
-
 /**
  * Interface listant toutes les props de filtrage.
  * On utilise le pattern "Lifting State Up" : les états sont gérés par le parent
