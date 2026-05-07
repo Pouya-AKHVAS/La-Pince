@@ -75,3 +75,32 @@ export async function fetchBudgetStatus(id: number): Promise<BudgetStatus[]>{
     }
     return response.json();
 }
+
+// GET /stats/budgets — Statistiques hybrides (Mensuel ou Global)
+// Ce service appelle notre nouveau moteur Back-end. 
+// Il accepte optionnellement un mois et une année pour l'historique.
+export async function fetchBudgetsStats(month?: number, year?: number): Promise<any[]> {
+    let url = `${import.meta.env.VITE_API_BASE_URL}/stats/budgets`;
+    
+    // Construction dynamique des paramètres de recherche
+    const params = new URLSearchParams();
+    if (month) params.append("month", month.toString());
+    if (year) params.append("year", year.toString());
+    
+    const queryString = params.toString();
+    if (queryString) {
+        url += `?${queryString}`;
+    }
+
+    const response = await fetch(url, {
+        method: "GET",
+        credentials: "include", // Important pour envoyer le cookie JWT
+        cache: "no-store",
+    });
+
+    if (!response.ok) {
+        throw new Error(`Erreur ${response.status} lors de la récupération des stats budgétaires`);
+    }
+
+    return response.json();
+}
