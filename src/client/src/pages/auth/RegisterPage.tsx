@@ -29,7 +29,7 @@ export default function RegisterPage() {
       setTimeout(() => {
         login(user);
       navigate("/accueil");
-    }, 2000);
+    }, 3000);
 
     } catch (err) {
       setError(err as ApiError);
@@ -169,7 +169,7 @@ export default function RegisterPage() {
    
              {/* Message suivant l'inscription */}
       {successMessage && (
-  <p className="text-sm font-bold text-black-700 mb-10">
+  <p className="text-base font-bold text-black mb-10">
     {successMessage}
   </p>
       )}   

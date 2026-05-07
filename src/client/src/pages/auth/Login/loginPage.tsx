@@ -13,6 +13,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const handleLogin = async (credentials: LoginCredentials) => {
     setIsLoading(true);
@@ -20,8 +21,14 @@ export default function LoginPage() {
     try {
       await loginUser(credentials);
       const user = await fetchCurrentUser();
+
+      setSuccessMessage("Connexion réussie !");
+
+      
+      setTimeout(() => {
       login(user);
       navigate("/accueil");
+      }, 2000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Une erreur est survenue");
     } finally {
@@ -112,6 +119,12 @@ export default function LoginPage() {
             />
           </section>
 
+           {successMessage && (
+            <p className="text-sm font-bold text-green-700 mt-4">
+              {successMessage}
+            </p>
+          )}
+
         </div>
       </div>
 
@@ -131,7 +144,16 @@ export default function LoginPage() {
           />
         </section>
 
+        {successMessage && (
+          <p className="text-base font-bold text-black-700 mt-4">
+            {successMessage}
+          </p>
+        )}
+
+      
+
       </div>
+    
 
       {/* ------------------------------------------------------------ */}
       {/* 4. FOOTER                                                    */}
