@@ -6,6 +6,7 @@
 // de la gestion des requêtes HTTP, rendant le code plus propre
 // et plus facile à maintenir.
 
+import { id } from "zod/locales";
 import { prisma } from "../lib/prisma.js";
 
 // -------------------------------------------------------------
@@ -136,3 +137,68 @@ export const getBudgetStatus = async (budgetId: number, userId: number) => {
     percent,
   };
 };
+
+// -------------------------------------------------------------
+// 7. Statistiques budgétaires Mensuelles
+
+export const getBudgetMonthlyStats =async (userId: number, month?: number, year?: number) => {
+  const now = new Date();
+
+  // Gestion de la période (Par défaut : mois/année en cours) 
+  const targetMonth = month !== undefined ? month - 1 : now.getMonth();
+  const targetYear = year || now.getFullYear(); 
+
+  // Définition des bornes temporelles (du 1er au dernier jour du mois) 
+  const startDate = new Date(targetYear, targetMonth, 1);
+  const endDate = new Date(targetYear, targetMonth + 1, 0, 23, 59, 59); // dernier jour du mois à 23:59:59
+  
+  // 1. Récupérer tous les budgets de l'utilisateur 
+  const budgets = await prisma.budget.findMany({
+    where: { userId },
+    include: {
+      category: true,
+    },
+  });
+
+ //  2. Calcul du réel pour chaque budget 
+ return await Promise.all(
+    budgets.map(async (budget : {
+      id: number;
+      limit_amount: number;
+      category: { name: string; color: string };
+    }) => {
+      // Choix technique : on filtre par budgetId et non par catégorie. 
+      // // Cela garantit que si une transaction de la même catégorie n'est pas liée par l'utilisateur ( choix d'un "extra"), elle n'est PAS comptée ici. 
+      const aggregateResult = await prisma.transaction.aggregate({
+        where: {
+          userId,
+          budgetId: budget.id, // Filtrer par budgetId pour ne compter que les transactions liées à ce budget
+          date: {
+            gte: startDate, // date >= début du mois
+            lte: endDate, // date <= fin du mois
+          },
+        },
+        _sum: {
+          amount: true,
+        },    
+          });
+        const spent = aggregateResult._sum.amount || 0; // Si aucune transaction, le total est 0
+
+        // Calcul du pourcentage réel (peut dépasser 100% pour la logique de couleur)
+        const realPercent = (budget.limit_amount > 0) ? (spent / budget.limit_amount) * 100 : 0;
+        return {
+          id: budget.id,
+          categoryName: budget.category.name,
+          limit: budget.limit_amount,
+          color : budget.category.color,
+          limitAmount: budget.limit_amount,
+          spentAmount: spent,
+          remainingAmount: Math.max(budget.limit_amount - spent, 0),
+          percent: Math.min(realPercent, 100), // Plafonné à 100 pour la barre UI
+          realPercent: realPercent,            // Vrai chiffre pour l'alerte (ex: 115%)
+          period: { month: targetMonth + 1, year: targetYear },
+        };
+    })
+  );
+};
+
