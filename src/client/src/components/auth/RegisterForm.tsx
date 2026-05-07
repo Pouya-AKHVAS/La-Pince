@@ -1,4 +1,5 @@
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
+import { useState } from "react"
 import { cn } from "../../lib/utils";
 import type { RegisterFormData, ApiError } from "../../types/auth";
 
@@ -21,6 +22,8 @@ export default function RegisterForm({
   isLoading,
   error,
 }: RegisterFormProps) {
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
   /**
    * Gère la soumission du formulaire et extrait les valeurs des champs.
    */
@@ -70,13 +73,13 @@ export default function RegisterForm({
         {
           id: "password",
           label: "Mot de passe",
-          type: "password",
+          type: showPassword ? "text" : "password",
           placeholder: "mot de passe",
         },
         {
           id: "confirm",
           label: "Saisir de nouveau...",
-          type: "password",
+          type: showConfirm ? "text" : "password",
           placeholder: "mot de passe",
         },
       ].map((field) => (
@@ -90,6 +93,7 @@ export default function RegisterForm({
           </label>
 
           {/* Champ de saisie accessible */}
+          <div className="flex items-center gap-2">
           <input
             id={field.id}
             name={field.id}
@@ -106,6 +110,30 @@ export default function RegisterForm({
             )}
             required
           />
+
+{/* On va afficher le bouton que pour les champs password et confirm*/} 
+{/* Pour inverser les états : on passe de true à false ou inversement pour afficher ou masquer */}
+  {(field.id === "password" || field.id === "confirm") && (
+   
+    <button
+      type="button"
+      onClick={() =>
+        field.id === "password"
+        
+          ? setShowPassword(!showPassword)
+          : setShowConfirm(!showConfirm)
+      }
+      
+    >
+      {/* Si le mot de passe est visible , l'oeil sera fermé pour le masquer et inversement */}
+      {field.id === "password" ? (
+        showPassword ? <EyeOff size={16} /> : <Eye size={16} />
+      ) : (
+        showConfirm ? <EyeOff size={16} /> : <Eye size={16} />
+      )}
+    </button>
+  )}
+</div>
 
           {/* Message d'erreur accessible */}
           {error?.field === field.id && (
