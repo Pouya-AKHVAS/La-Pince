@@ -13,6 +13,9 @@ export default function RevenuCard({ onSuccess }: { onSuccess?: () => void }) {
   const [montant, setMontant] = useState("");
   const [date, setDate] = useState("");
 
+  // Message pour le revenu
+  const [messageSuccess, setMessageSuccess] = useState<string | null>(null);
+
   // 4. Chargement des données au montage du composant
   useEffect(() => {
     async function loadCategories() {
@@ -20,6 +23,7 @@ export default function RevenuCard({ onSuccess }: { onSuccess?: () => void }) {
         const data = await fetchCategories();
         const expenseCategories = data.filter((cat) => cat.type === "INCOME");
         setCategories(expenseCategories);
+       
       } catch (error) {
         console.error("Erreur lors du chargement des catégories:", error);
       }
@@ -51,6 +55,12 @@ export default function RevenuCard({ onSuccess }: { onSuccess?: () => void }) {
         <span className="font-black">+</span> Revenu
       </p>
 
+            {messageSuccess && (
+  <p className="text-[8px] md:text-[9px] font-bold text-black-700 bg-white/80 px-2 py-0.5 rounded-full">
+    ✓ {messageSuccess}
+  </p>
+)}
+
       {/* Formulaire */}
       <form
         onSubmit={async (e) => {
@@ -63,11 +73,13 @@ export default function RevenuCard({ onSuccess }: { onSuccess?: () => void }) {
               idcategory: Number(categorie),
             });
             //Reload
-             onSuccess?.()
+            onSuccess?.()
             setTransaction("");
             setMontant("");
             setDate("");
             setCategorie("");
+            setMessageSuccess("Revenu ajouté !");
+            setTimeout(() => setMessageSuccess(null), 3000);
           } catch (error) {
             console.error("Erreur création revenu :", error);
           }

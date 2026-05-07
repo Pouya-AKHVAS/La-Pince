@@ -14,6 +14,9 @@ export default function DepenseCard({ onSuccess }: { onSuccess?: () => void }) {
   const [montant, setMontant] = useState("");
   const [date, setDate] = useState("");
 
+ // Message dépense ajouté
+const [messageSuccess, setMessageSuccess] = useState<string | null>(null);
+
   // 4. Chargement des données au montage du composant
   useEffect(() => {
     async function loadCategories() {
@@ -21,6 +24,7 @@ export default function DepenseCard({ onSuccess }: { onSuccess?: () => void }) {
         const data = await fetchCategories();
         const expenseCategories = data.filter((cat) => cat.type === "EXPENSE");
         setCategories(expenseCategories);
+        
       } catch (error) {
         console.error("Erreur lors du chargement des catégories:", error);
       }
@@ -56,6 +60,14 @@ export default function DepenseCard({ onSuccess }: { onSuccess?: () => void }) {
         />
       </div>
 
+            {/* Message d'ajout de dépenses*/}
+
+      {messageSuccess && (
+  <p className="text-[8px] md:text-[9px] font-bold text-black-700 bg-white/80 px-2 py-0.5 rounded-full">
+    ✓ {messageSuccess}
+  </p>
+)}
+
       {/* Formulaire */}
       <form
         onSubmit={async (e)=> {
@@ -74,6 +86,9 @@ export default function DepenseCard({ onSuccess }: { onSuccess?: () => void }) {
             setMontant("");
             setDate("")
             setCategorie("");
+            setMessageSuccess("Dépense ajoutée !"); 
+            setTimeout(() => setMessageSuccess(null), 3000);
+  
 
           } catch(error) {
             console.error("Erreur création dépense:", error)
