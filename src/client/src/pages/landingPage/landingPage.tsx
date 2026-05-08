@@ -1,4 +1,5 @@
 import Footer from "../../components/Footer/footer";
+import { AnimatedOrbBackground } from "../../components/AnimatedOrbBackground/AnimatedOrbBackground";
 
 export default function LandingPage() {
   // Style du bouton blanc "S'inscrire"
@@ -7,10 +8,11 @@ export default function LandingPage() {
 
   return (
     <main
-      className="fixed inset-0 w-full h-full bg-[#cbd5e1] overflow-hidden font-sans text-[#002b49]"
+      className="fixed inset-0 w-full h-full overflow-hidden font-sans text-[#002b49]"
       role="main"
       aria-label="Page d'accueil de La Pince"
     >
+      <AnimatedOrbBackground />
       {/* ------------------------------------------------------------ */}
       {/* 1. BLOC DESKTOP (MD+)                                        */}
       {/* ------------------------------------------------------------ */}

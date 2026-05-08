@@ -7,8 +7,8 @@ type Props = {
 
 // Recoit 5.5 -> renvoie "5.50"
 
-function formatAmount(amount: number): string {
-    return amount.toFixed(2).replace(".",",");
+function formatAmount(amount: number | string): string {
+    return Number(amount).toFixed(2).replace(".", ",");
 }
 
 export default function AlertPopup({ alert, onClose }: Props ) {
@@ -46,14 +46,13 @@ export default function AlertPopup({ alert, onClose }: Props ) {
                 <p className="text-white font-black text-3xl tracking-tight">
                     {formatAmount(alert.exceededAmount)} €
                 </p>
-                <p className="text-white/90 text-sm">
-                dans la catégorie
+                <p className="text-white/90 text-lg font-semibold">
+                    dans la catégorie
                 </p>
 
-                {/**Badge Categorie */}
-                <span className="bg-white/20 text-white font-bold text-sm px-5 rounded-full mt-1">
-                {alert.category.name}
-                </span>
+                <p className="text-white font-black text-3xl tracking-tight text-center">
+                    {alert.category.name}
+                </p>
 
                 {/** Micro indication */}
 

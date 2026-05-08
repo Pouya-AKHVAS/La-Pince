@@ -46,7 +46,7 @@ export default function CategorySelect({
           onClick={() => setOpen(!open)}
           className="w-full flex items-center justify-between gap-1 px-3 py-1 focus:outline-none"
         >
-          <span className={`flex-1 text-center text-[#002341] font-bold truncate ${small ? "text-[10px]" : "text-[11px]"}`}>
+          <span className={`flex-1 text-center text-[#002b49] font-bold truncate ${small ? "text-sm" : "text-base"}`}>
             {selectedCategory ? selectedCategory.name : "Catégorie"}
           </span>
           <span className={`text-white text-[10px] transition-transform duration-300 ${open ? "rotate-180" : ""}`}>
@@ -72,7 +72,7 @@ export default function CategorySelect({
                   setOpen(false);
                 }}
                 /* 3. On garde le texte sombre sur fond orange, avec un hover plus clair */
-                className="w-full text-left px-3 py-2 text-[#002341] text-[10px] font-medium hover:bg-orange-400 transition-colors border-t border-white/20"
+                className="w-full text-left px-3 py-2 text-[#002b49] text-sm font-medium hover:bg-orange-400 transition-colors border-t border-white/20"
               >
                 {cat.name || "Sans nom"}
               </button>

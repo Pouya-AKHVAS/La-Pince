@@ -8,6 +8,7 @@ import LoginForm from "../../../components/auth/LoginForm";
 import Footer from "../../../components/Footer/footer";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
+import { AnimatedOrbBackground } from "../../../components/AnimatedOrbBackground/AnimatedOrbBackground";
 
 /**
  * Page de Connexion - Isolation Totale Desktop/Mobile
@@ -39,9 +40,10 @@ export default function LoginPage() {
 
   return (
     <main
-      className="fixed inset-0 w-full h-full bg-[#b9c6d1] overflow-hidden font-sans text-[#002b49]"
+      className="fixed inset-0 w-full h-full overflow-hidden font-sans text-[#002b49]"
       role="main"
     >
+      <AnimatedOrbBackground />
       {/* ------------------------------------------------------------ */}
       {/* 1. SECTION DESKTOP (MD+)                                     */}
       {/* ------------------------------------------------------------ */}

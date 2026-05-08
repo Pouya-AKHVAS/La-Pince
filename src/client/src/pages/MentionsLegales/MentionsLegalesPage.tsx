@@ -61,7 +61,7 @@ export default function MentionsLegalesPage() {
   }, []);
 
   return (
-    <main className="fixed inset-0 w-full h-full overflow-hidden font-sans text-[#002b49] bg-[#cbd5e1]">
+    <main className="fixed inset-0 w-full h-full overflow-hidden font-sans text-[#002b49]">
 
       <AnimatedOrbBackground />
 

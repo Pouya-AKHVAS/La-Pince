@@ -9,7 +9,7 @@ export default function LogoutButton() {
     // logout() dans AuthContext appelle fetchLogout() (détruit le cookie côté back)
     // puis vide l'état React. Tout est géré dans le contexte — pas de fetch ici.
     await logout();
-    navigate("/login");
+    navigate("/");
   }
 
   return (

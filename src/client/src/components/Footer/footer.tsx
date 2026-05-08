@@ -47,7 +47,7 @@ export default function Footer({
     },
     {
       id: "transactions",
-      label: "Transactions",
+      label: "Accueil",
       href: "/accueil",
       src: "/WEBP/Icones/Lapince-home-icon.webp",
     },

@@ -1,26 +1,23 @@
-import { useState, useEffect } from "react"; // 1. Ajout de useEffect
+import { useState, useEffect } from "react";
 import CategorySelect from "./CategorySelect";
-// 2. Importation du service et du type
-import { fetchCategories } from "../../services/categoryApi.js"; 
+import { fetchCategories } from "../../services/categoryApi.js";
 import type { Category } from "../../types/category.js";
-
 import { createTransaction } from "../../services/transactionApi.js";
 
 export default function DepenseCard({ onSuccess }: { onSuccess?: () => void }) {
-  // 3. Remplacement du state par un tableau d'objets Category
   const [categories, setCategories] = useState<Category[]>([]);
   const [categorie, setCategorie] = useState("");
   const [transaction, setTransaction] = useState("");
   const [montant, setMontant] = useState("");
   const [date, setDate] = useState("");
+  const [messageSuccess, setMessageSuccess] = useState<string | null>(null);
+  const [messageError, setMessageError] = useState<string | null>(null);
 
-  // 4. Chargement des données au montage du composant
   useEffect(() => {
     async function loadCategories() {
       try {
         const data = await fetchCategories();
-        const expenseCategories = data.filter((cat) => cat.type === "EXPENSE");
-        setCategories(expenseCategories);
+        setCategories(data.filter((cat) => cat.type === "EXPENSE"));
       } catch (error) {
         console.error("Erreur lors du chargement des catégories:", error);
       }
@@ -28,89 +25,93 @@ export default function DepenseCard({ onSuccess }: { onSuccess?: () => void }) {
     loadCategories();
   }, []);
 
-
-
-
-
   return (
-    <div className="relative w-44 h-44 md:w-56 md:h-56 rounded-full bg-[#BC8787] flex flex-col items-center justify-center gap-1 md:gap-2 shadow-xl shrink-0">
-      {/* Titre */}
-      <p className="text-[#002341] font-semibold text-sm md:text-xl tracking-tight bg-white px-3 md:px-4 py-0.5 md:py-1 rounded-full">
-        <span className="font-black">—</span> Dépense
-      </p>
-
-      {/* Badge Catégorie : On passe maintenant le tableau dynamique */}
-      <div className="absolute top-2 right-2 md:hidden">
-        <CategorySelect
-          categories={categories}
-          value={categorie}
-          onChange={setCategorie}
-          small
-        />
-      </div>
-      <div className="absolute top-1 right-6 hidden md:block">
-        <CategorySelect
-          categories={categories}
-          value={categorie}
-          onChange={setCategorie}
-        />
-      </div>
-
-      {/* Formulaire */}
-      <form
-        onSubmit={async (e)=> {
-          e.preventDefault();
-          try {
-            await createTransaction({
-              amount: Math.abs(Number(montant)),
-              date: new Date(date).toISOString(),
-              description: transaction,
-              idcategory : Number(categorie),
-            });
-            //Reload
-             onSuccess?.();
-            // Réinitialisation du formulaire
-            setTransaction("");
-            setMontant("");
-            setDate("")
-            setCategorie("");
-
-          } catch(error) {
-            console.error("Erreur création dépense:", error)
-          }
-        }}
-        className="flex flex-col items-center gap-1 w-full px-5 md:px-10"
-      >
-        <input
-          type="text"
-          placeholder="Transaction"
-          value={transaction}
-          onChange={(e) => setTransaction(e.target.value)}
-          className="w-full h-5 md:h-6 rounded-full bg-white/70 text-[9px] md:text-[10px] px-3 outline-none placeholder:text-gray-500"
-        />
-        <div className="w-full flex items-center h-5 md:h-6 rounded-full bg-white/70 px-3 gap-1">
-          <input
-            type="number"
-            placeholder="Montant"
-            value={montant}
-            onChange={(e) => setMontant(e.target.value)}
-            className="flex-1 bg-transparent text-[9px] md:text-[10px] outline-none placeholder:text-gray-500 min-w-0"
-          />
-          <span className="text-[9px] md:text-[10px] text-gray-500 shrink-0">€</span>
+    <div className="relative flex flex-col items-center">
+      {!messageSuccess && (
+        <div className="absolute top-1 md:top-4 z-30">
+          <CategorySelect categories={categories} value={categorie} onChange={setCategorie} />
         </div>
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className="w-full h-5 md:h-6 rounded-full bg-white/70 text-[9px] md:text-[10px] px-3 outline-none text-gray-500"
-        />
-        <button
-          type="submit"
-          className="mt-0.5 px-4 py-0.5 bg-white/50 hover:bg-white/80 text-[#002b49] text-[8px] md:text-[9px] font-black uppercase rounded-full transition-all"
-        >
-          Ajouter
-        </button>
-      </form>
+      )}
+
+      <div className="relative w-[220px] h-[220px] md:w-72 md:h-72 rounded-full bg-[#BC8787] flex flex-col items-center justify-center gap-2 shadow-xl shrink-0 mt-4">
+        {messageSuccess ? (
+          <p className="text-[#002341] font-black text-3xl text-center px-4 leading-tight whitespace-pre-line">
+            {messageSuccess}
+          </p>
+        ) : (
+          <>
+            <p className="text-[#002341] font-semibold text-base md:text-xl tracking-tight bg-white px-3 md:px-5 py-0.5 md:py-1 rounded-full">
+              <span className="font-black">—</span> Dépense
+            </p>
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!transaction || !montant || !date || !categorie) {
+                  setMessageError("Champs manquants !");
+                  setTimeout(() => setMessageError(null), 3000);
+                  return;
+                }
+                try {
+                  await createTransaction({
+                    amount: Math.abs(Number(montant)),
+                    date: new Date(date).toISOString(),
+                    description: transaction,
+                    idcategory: Number(categorie),
+                  });
+                  setTransaction("");
+                  setMontant("");
+                  setDate("");
+                  setCategorie("");
+                  setMessageSuccess("✓ Dépense ajoutée !");
+                  setTimeout(() => {
+                    setMessageSuccess(null);
+                    onSuccess?.();
+                  }, 3000);
+                } catch (error) {
+                  console.error("Erreur création dépense:", error);
+                }
+              }}
+              className="flex flex-col items-center gap-1.5 w-full px-5 md:px-10"
+            >
+              <input
+                type="text"
+                placeholder="Transaction"
+                value={transaction}
+                onChange={(e) => setTransaction(e.target.value)}
+                className="w-full h-6 md:h-8 rounded-full bg-white/70 text-xs md:text-sm px-3 outline-none placeholder:text-gray-500"
+              />
+              <div className="w-full flex items-center h-6 md:h-8 rounded-full bg-white/70 px-3 gap-1">
+                <input
+                  type="number"
+                  placeholder="Montant"
+                  value={montant}
+                  onChange={(e) => setMontant(e.target.value)}
+                  className="flex-1 bg-transparent text-xs md:text-sm outline-none placeholder:text-gray-500 min-w-0"
+                />
+                <span className="text-xs md:text-sm text-gray-500 shrink-0">€</span>
+              </div>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full h-6 md:h-8 rounded-full bg-white/70 text-xs md:text-sm px-3 outline-none text-gray-500"
+              />
+              {messageError && (
+                <p className="text-[#002341] font-bold text-[10px] md:text-xs bg-white/80 px-2 py-0.5 rounded-full text-center">
+                  ⚠ {messageError}
+                </p>
+              )}
+              <button
+                type="submit"
+                className="mt-1 px-6 md:px-8 py-1.5 md:py-2 bg-white/50 hover:bg-white/80 text-[#002b49] text-sm md:text-base font-black uppercase rounded-full transition-all"
+              >
+                Ajouter
+              </button>
+            </form>
+          </>
+        )}
+      </div>
     </div>
   );
 }

@@ -17,7 +17,7 @@ export default function PrivateRoute() {
   if (!isAuthenticated) {
     // replace=true évite que l'utilisateur puisse faire "Précédent" sur son navigateur
     // pour revenir sur la page protégée
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   // 3. Si tout est OK, on affiche les composants enfants (les pages protégées)

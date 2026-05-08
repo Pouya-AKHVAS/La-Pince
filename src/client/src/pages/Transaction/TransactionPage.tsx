@@ -7,6 +7,7 @@ import { fetchOverview } from "../../services/statsApi";
 import type { Overview } from "../../types/stats";
 
 import Footer from "../../components/Footer/footer";
+import { AnimatedOrbBackground } from "../../components/AnimatedOrbBackground/AnimatedOrbBackground";
 import DepenseCard from "../../components/CategoryCard/DepenseCard";
 import RevenuCard from "../../components/CategoryCard/RevenuCard";
 import BudgetCard from "../../components/CategoryCard/BudgetCard";
@@ -62,7 +63,7 @@ const [footerHeight, setFooterHeight] = useState(0);
   
   if (loading) {
     return (
-      <main className="fixed inset-0 flex items-center justify-center bg-[#cbd5e1]">
+      <main className="fixed inset-0 flex items-center justify-center bg-[#c8dce8]">
         <p className="text-[#002b49] font-black text-xl animate-pulse">
           Chargement…
         </p>
@@ -72,13 +73,14 @@ const [footerHeight, setFooterHeight] = useState(0);
 
   if (error) {
     return (
-      <main className="fixed inset-0 flex items-center justify-center bg-[#cbd5e1]">
+      <main className="fixed inset-0 flex items-center justify-center bg-[#c8dce8]">
         <p className="text-red-600 font-bold text-lg">{error}</p>
       </main>
     );
   }
   return (
-    <main className="fixed inset-0 w-full h-full bg-[#cbd5e1] overflow-hidden font-sans text-[#002b49]">
+    <main className="fixed inset-0 w-full h-full overflow-hidden font-sans text-[#002b49]">
+      <AnimatedOrbBackground />
       {/* Arrière-plan billets */}
       <img
         src="/WEBP/Desktop/Lapince-Hero-Background-Desktop.webp"
@@ -90,12 +92,12 @@ const [footerHeight, setFooterHeight] = useState(0);
       {/* Logo La Pince — classes identiques à la page login */}
       <img
         src="/WEBP/Mobile/Lapince-Logo-Mobile.webp"
-        className="absolute top-6 left-6 w-28 z-50 md:hidden"
+        className="absolute top-6 left-6 w-28 z-[11] md:hidden"
         alt="Logo Mobile"
       />
       <img
         src="/WEBP/Desktop/Lapince-Logo-Desktop.webp"
-        className="absolute top-10 left-15 w-24 lg:w-60 z-50 transition-all hidden md:block"
+        className="absolute top-10 left-15 w-24 lg:w-60 z-[11] transition-all hidden md:block"
         alt="Logo"
       />
 
@@ -108,7 +110,7 @@ const [footerHeight, setFooterHeight] = useState(0);
       {/* Contenu */}
       <div className="relative z-20 flex flex-col h-full pb-10">
         {/* En-tête Solde */}
-        <header className="flex flex-col items-center pt-10 pb-4 shrink-0">
+        <header className="flex flex-col items-center pt-32 md:pt-10 pb-4 shrink-0">
           <h1 className="text-[35px] md:text-[50px] lg:text-[60px] font-black uppercase leading-none tracking-tighter">
             Accueil
           </h1>
@@ -151,8 +153,8 @@ const [footerHeight, setFooterHeight] = useState(0);
           </div>
 
           {/* Mobile : 2 en haut côte à côte + Budget centré en bas */}
-          <div className="flex md:hidden flex-col items-center gap-6 w-full px-2">
-            <div className="flex gap-6 justify-center w-full">
+          <div className="flex md:hidden flex-col items-center gap-2 w-full px-2">
+            <div className="flex flex-col min-[400px]:flex-row gap-2 justify-center items-center w-full">
               <DepenseCard onSuccess={load} />
               <RevenuCard onSuccess={load} />
             </div>
@@ -178,7 +180,7 @@ const [footerHeight, setFooterHeight] = useState(0);
         ref={footerRef}
         className="absolute bottom-0 left-0 w-full z-[60]"
       >
-        <Footer showIcons activeIds={["landingpage", "params", "dashboard"]} />
+        <Footer showIcons activeIds={["dashboard", "params"]} />
       </footer>
     </main>
   );

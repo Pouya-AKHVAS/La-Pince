@@ -5,6 +5,7 @@ import type { RegisterFormData, ApiError } from "../../types/auth";
 import Footer from "../../components/Footer/footer";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { AnimatedOrbBackground } from "../../components/AnimatedOrbBackground/AnimatedOrbBackground";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -37,9 +38,10 @@ export default function RegisterPage() {
 
   return (
     <main
-      className="fixed inset-0 w-full h-full bg-[#b9c6d1] overflow-hidden font-sans text-[#002b49]"
+      className="fixed inset-0 w-full h-full overflow-hidden font-sans text-[#002b49]"
       role="main"
     >
+      <AnimatedOrbBackground />
       {/* ------------------------------------------------------------ */}
       {/* 1. BLOC DESKTOP (MD+)                                        */}
       {/* ------------------------------------------------------------ */}

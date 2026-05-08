@@ -8,6 +8,7 @@ import type { Overview, MonthlyEntry } from "../../types/stats";
 import { useAlerts } from "../../hooks/useAlerts";
 
 import Footer from "../../components/Footer/footer";
+import { AnimatedOrbBackground } from "../../components/AnimatedOrbBackground/AnimatedOrbBackground";
 import AlertPopup from "../../components/Alert/AlertPopup";
 
 import { StatsCards } from "./components/StatsCards";
@@ -117,7 +118,8 @@ if (error) {
 
   return (
     
-    <main className="fixed inset-0 w-full h-full bg-[#cbd5e1] overflow-hidden font-sans text-[#002b49]">
+    <main className="fixed inset-0 w-full h-full overflow-hidden font-sans text-[#002b49]">
+      <AnimatedOrbBackground />
       <img
         src="/WEBP/Desktop/Lapince-Hero-Background-Desktop.webp"
         className="absolute bottom-0 left-0 w-[60vw] opacity-20 object-contain origin-bottom-left z-0 pointer-events-none select-none"
@@ -131,12 +133,12 @@ if (error) {
 
       <img
         src="/WEBP/Mobile/Lapince-Logo-Mobile.webp"
-        className="absolute top-6 left-6 w-28 z-50 md:hidden"
+        className="absolute top-6 left-6 w-28 z-[11] md:hidden"
         alt="Logo"
       />
       <img
         src="/WEBP/Desktop/Lapince-Logo-Desktop.webp"
-        className="absolute top-10 left-15 w-24 lg:w-60 z-50 transition-all hidden md:block"
+        className="absolute top-10 left-15 w-24 lg:w-60 z-[11] transition-all hidden md:block"
         alt="Logo"
       />
 
@@ -144,7 +146,7 @@ if (error) {
         className="relative z-20 flex flex-col h-full overflow-y-auto scrollbar-hide"
         style={{ paddingBottom: footerHeight + 40 }}
       >
-        <header className="flex flex-col items-center pt-10 pb-8 shrink-0">
+        <header className="flex flex-col items-center pt-40 md:pt-10 pb-8 shrink-0">
           <h1 className="text-[35px] md:text-[50px] lg:text-[60px] font-black uppercase leading-none tracking-tighter">
             Tableau de bord
           </h1>
@@ -191,7 +193,7 @@ if (error) {
       >
         <Footer
           showIcons
-          activeIds={["landingpage", "params", "transactions"]}
+          activeIds={["transactions", "params"]}
         />
       </footer>
     </main>
