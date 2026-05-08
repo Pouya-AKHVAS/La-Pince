@@ -54,7 +54,7 @@ export const generateBudgetAlert = async (budgetId: number, userId: number) => {
   const existingAlert = await prisma.alert.findFirst({
     where: {
       userId,
-      categoryName: budget.category.name,
+      categoryId: budget.category.id,
     },
   });
 
@@ -75,7 +75,7 @@ export const generateBudgetAlert = async (budgetId: number, userId: number) => {
   const alert = await prisma.alert.create({
     data: {
       userId,
-      categoryName: budget.category.name,
+      categoryId: budget.category.id,
       exceededAmount,
     },
   });

@@ -5,7 +5,11 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
-
+enum PeriodType {
+  weekly
+  monthly
+  custom
+}
 enum CategoryType {
   EXPENSE
   INCOME
@@ -50,12 +54,12 @@ model Category {
   icon  String?
   type  CategoryType
 
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")  // nom DB préservé via @map
+  updatedAt DateTime @updatedAt      @map("updated_at")
 
-  /// Relation avec les transactions
   transactions Transaction[]
   budgets      Budget[]
+  alerts       Alert[]
 
   @@unique([name])
   @@map("category")
@@ -66,24 +70,24 @@ model Transaction {
   amount      Decimal
   date        DateTime
   description String?
+  userId      Int      @map("iduser")
+  categoryId  Int      @map("idcategory")
+  budgetId    Int?
+  updatedAt   DateTime @default(now()) @updatedAt
 
-  // Clés étrangères
-  userId     Int @map("iduser") // Mappé pour garder le nom en BDD
-  categoryId Int @map("idcategory") // Mappé pour garder le nom en BDD
+  category Category  @relation(fields: [categoryId], references: [id])
+  User     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  budget   Budget?   @relation(fields: [budgetId], references: [id])
 
-  // Relations
-  category Category @relation(fields: [categoryId], references: [id])
-  User     User     @relation(fields: [userId], references: [id],  onDelete: Cascade)
-  budget   Budget?  @relation(fields: [budgetId], references: [id])
-  budgetId Int?
-
+  @@index([userId])
+  @@index([userId, date])
   @@map("transactions")
 }
 
 model Budget {
   id           Int    @id @default(autoincrement())
   limit_amount Float
-  period       String
+  period       PeriodType
   id_category  Int
   userId       Int
 
@@ -99,17 +103,20 @@ model Budget {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt()
 
+  @@index([userId])
   @@map("budgets")
 }
 
 model Alert {
   id             Int      @id @default(autoincrement())
-  categoryName   String
-  exceededAmount Float
+  exceededAmount Decimal
   isRead         Boolean  @default(false)
   userId         Int
+  categoryId     Int
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category       Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   createdAt      DateTime @default(now())
 
+  @@index([userId])
   @@map("alerts")
 }

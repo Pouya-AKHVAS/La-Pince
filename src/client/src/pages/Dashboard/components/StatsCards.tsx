@@ -1,19 +1,9 @@
-/**
- * Interface définissant les données attendues par le composant StatsCards.
- * Regroupe les totaux calculés dans la page parente.
- */
+import type { Overview } from "../../../types/stats";
+
 interface StatsCardsProps {
-  stats: { 
-    income: number;   // Somme totale des revenus
-    expenses: number;  // Somme totale des dépenses
-    balance: number;  // Différence entre revenus et dépenses
-  };
+  stats: Overview;
 }
 
-/**
- * Composant StatsCards : Affiche le résumé financier sous forme de 3 cartes distinctes.
- * Utilise le flou (backdrop-blur) et la transparence pour l'esthétique "Glassmorphism".
- */
 export function StatsCards({ stats }: StatsCardsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

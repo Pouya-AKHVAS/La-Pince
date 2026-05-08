@@ -6,17 +6,35 @@
 import { prisma } from "../lib/prisma.js";
 
 // --- 1. Récupérer toutes les transactions avec les filtres ---
-export const getAllTransactions = async (userId: number, filters: any) => { // On reçoit l'id de l'utilisateur et les filtres (idcategory, startDate, endDate) depuis le contrôleur
-  return prisma.transaction.findMany({
-    where: {
-      userId,
-      ...(filters.idcategory && { categoryId: filters.idcategory }),
-      ...(filters.startDate && { date: { gte: new Date(filters.startDate) } }),
-      ...(filters.endDate && { date: { lte: new Date(filters.endDate) } }),
-    },
-    orderBy: { date: "desc" }, // On trie les transactions par date décroissante pour afficher les plus récentes en premier
-    include: { category: true }, // On inclut la catégorie pour avoir le type (income/expense) côté front
-  });
+export const getAllTransactions = async (
+  userId: number,
+  filters: { idcategory?: number; startDate?: string; endDate?: string; page: number; limit: number },
+) => {
+  const where = {
+    userId,
+    ...(filters.idcategory && { categoryId: filters.idcategory }),
+    ...(filters.startDate  && { date: { gte: new Date(filters.startDate) } }),
+    ...(filters.endDate    && { date: { lte: new Date(filters.endDate)   } }),
+  };
+  const skip = (filters.page - 1) * filters.limit;
+
+  const [data, total] = await Promise.all([
+    prisma.transaction.findMany({
+      where,
+      orderBy: { date: "desc" },
+      include: { category: true },
+      skip,
+      take: filters.limit,
+    }),
+    prisma.transaction.count({ where }),
+  ]);
+
+  return {
+    data,
+    total,
+    page:       filters.page,
+    totalPages: Math.ceil(total / filters.limit),
+  };
 };
 
 // --- 2. Créer une transaction ---

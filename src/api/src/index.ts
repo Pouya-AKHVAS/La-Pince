@@ -46,7 +46,10 @@ app.get("/", (req, res) => {
   res.json("Hello");
 });
 
-// Démarre un serveur
-app.listen(PORT, () => {
-  console.info(`🚀 Server started at http://localhost:${PORT}`);
-});
+export default app;
+
+if (process.env.NODE_ENV !== "test") {
+  app.listen(PORT, () => {
+    console.info(`🚀 Server started at http://localhost:${PORT}`);
+  });
+}

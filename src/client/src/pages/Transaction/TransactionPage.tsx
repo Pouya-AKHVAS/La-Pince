@@ -1,69 +1,51 @@
-import { useEffect, useRef, useState } from "react";
-import { fetchTransactions, type Transaction } from "../../services/transactionApi"; //Imports Transactions
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  fetchTransactions,
+  type Transaction,
+} from "../../services/transactionApi";
+import { fetchOverview } from "../../services/statsApi";
+import type { Overview } from "../../types/stats";
 
 import Footer from "../../components/Footer/footer";
 import DepenseCard from "../../components/CategoryCard/DepenseCard";
 import RevenuCard from "../../components/CategoryCard/RevenuCard";
 import BudgetCard from "../../components/CategoryCard/BudgetCard";
 import TransactionSheet from "../../components/TransactionList/TransactionSheet";
-
 import AlertPopup from "../../components/Alert/AlertPopup";
+import { useAlerts } from "../../hooks/useAlerts";
 
-import type { Alert } from "../../types/alert";
-import { fetchAlerts, markAlertAsRead } from "../../services/alertApi";
-
-
-// Page placeholder — sera remplacée par la version de Marie
 export default function TransactionPage() {
+  const { currentAlert, handleCloseAlert, loadAlerts } = useAlerts();
   const footerRef = useRef<HTMLElement>(null);
-  const [footerHeight, setFooterHeight] = useState(() =>
-    window.innerWidth >= 768 ? 50 : 35,
-  );
-
-  // --- Logique alertes ---
-  const [alerts, setAlerts] = useState<Alert[]>([]);
-
-  // null = aucune popup visible. Un nombre = index de l'alerte affichée.
-  const [currentAlertIndex, setCurrentAlertIndex] = useState<number | null>(
-    null,
-  );
+const [footerHeight, setFooterHeight] = useState(0);
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [overview, setOverview] = useState<Overview | null>(null);
 
-  const loadAlerts = async () => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const data = await fetchAlerts();
-      const unread = data.filter((a) => !a.isRead);
-      if (unread.length > 0) {
-        setAlerts(unread);
-        setCurrentAlertIndex(0);
-      }
-    } catch (error) {
-      console.error("Erreur chargements alerts :", error);
+      const [trans, ov] = await Promise.all([
+        fetchTransactions(),
+        fetchOverview(),
+        loadAlerts(),
+      ]);
+      setTransactions(trans.data);
+      setOverview(ov);
+    } catch {
+      setError("Impossible de charger les données.");
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const load = async () => {
-    try {
-      const data = await fetchTransactions();
-      setTransactions(data);
-    } catch (error) {
-      console.error("Erreur chargement transactions :", error);
-    }
-    // on recharge les alertes après chaque transaction pour refléter les dépassements en temps réel
-    await loadAlerts();
-  };
-
-  const solde = transactions.reduce((sum, t) => {
-    return t.category.type === "INCOME"
-      ? sum + Number(t.amount)
-      : sum - Number(t.amount);
-  }, 0);
+  }, [loadAlerts]);
 
   useEffect(() => {
     load();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [load]);
 
   useEffect(() => {
     if (!footerRef.current) return;
@@ -72,30 +54,29 @@ export default function TransactionPage() {
     });
     observer.observe(footerRef.current);
     return () => observer.disconnect();
-  }, []);
+  }, [loading]);
 
-const transactionsSorted = [...transactions].sort(
-  (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-);
-
-  function handleCloseAlert() {
-    if (currentAlertIndex === null) return;
-
-    const alert = alerts[currentAlertIndex]
-    // Fire-and-forget : on n'attend pas la réponse pour fluidifier l'UI
-    markAlertAsRead(alert.id).catch(console.error)
-
-    const nextIndex = currentAlertIndex+1
-    if (nextIndex < alerts.length) {
-      setCurrentAlertIndex(nextIndex); // alerte suivante
-    } else {
-      setCurrentAlertIndex(null); // plus d'alertes → popup disparaît
-    }
+  const transactionsSorted = [...transactions].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+  );
+  
+  if (loading) {
+    return (
+      <main className="fixed inset-0 flex items-center justify-center bg-[#cbd5e1]">
+        <p className="text-[#002b49] font-black text-xl animate-pulse">
+          Chargement…
+        </p>
+      </main>
+    );
   }
 
-  const currentAlert =
-    currentAlertIndex !== null ? alerts[currentAlertIndex] : null;
-
+  if (error) {
+    return (
+      <main className="fixed inset-0 flex items-center justify-center bg-[#cbd5e1]">
+        <p className="text-red-600 font-bold text-lg">{error}</p>
+      </main>
+    );
+  }
   return (
     <main className="fixed inset-0 w-full h-full bg-[#cbd5e1] overflow-hidden font-sans text-[#002b49]">
       {/* Arrière-plan billets */}
@@ -144,10 +125,12 @@ const transactionsSorted = [...transactions].sort(
             </span>
             <span className="text-4xl font-black tracking-tight">
               {" "}
-              {solde.toLocaleString("fr-FR", {
-                style: "currency",
-                currency: "EUR",
-              })}
+              {overview
+                ? overview.balance.toLocaleString("fr-FR", {
+                    style: "currency",
+                    currency: "EUR",
+                  })
+                : "…"}
             </span>
           </p>
         </header>
@@ -191,7 +174,10 @@ const transactionsSorted = [...transactions].sort(
         transactions={transactionsSorted}
         footerHeight={footerHeight}
       />
-      <footer ref={footerRef} className="absolute bottom-0 left-0 w-full z-[60]">
+      <footer
+        ref={footerRef}
+        className="absolute bottom-0 left-0 w-full z-[60]"
+      >
         <Footer showIcons activeIds={["landingpage", "params", "dashboard"]} />
       </footer>
     </main>

@@ -56,7 +56,6 @@ async function main() {
   { name: 'Bars & Café', type: CategoryType.EXPENSE, color: '#F97316', icon: 'Coffee' },
   { name: 'Sorties Culturelles', type: CategoryType.EXPENSE, color: '#EA580C', icon: 'Ticket' }, // Ciné, Musée
   { name: 'Shopping', type: CategoryType.EXPENSE, color: '#EC4899', icon: 'ShoppingBag' },
-  { name: 'Abonnements', type: CategoryType.EXPENSE, color: '#8B5CF6', icon: 'CreditCard' },
   { name: 'Jeux vidéo', type: CategoryType.EXPENSE, color: '#A855F7', icon: 'Gamepad2' },
   { name: 'Sport', type: CategoryType.EXPENSE, color: '#10B981', icon: 'Dumbbell' },
   { name: 'Voyages / Vacances', type: CategoryType.EXPENSE, color: '#06B6D4', icon: 'Plane' },
@@ -77,10 +76,13 @@ async function main() {
   //Divers
   { name: 'Autres', type: CategoryType.EXPENSE, color: '#9CA3AF', icon: 'MoreHorizontal' },
 ]      
-    await prisma.category.createMany({
-  data: defaultCategories,
-  skipDuplicates: true,
-});
+  for (const cat of defaultCategories) {
+    await prisma.category.upsert({
+      where:  { name: cat.name },
+      update: { color: cat.color, icon: cat.icon, type: cat.type },
+      create: cat,
+    });
+  }
 
   console.log('✅ Seeding terminé');
 }

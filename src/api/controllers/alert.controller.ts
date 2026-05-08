@@ -22,7 +22,8 @@ export async function getAlerts(req: Request, res: Response) {
   // Recherche des alertes appartenant à cet utilisateur
   const alerts = await prisma.alert.findMany({
     where: { userId },
-    orderBy: { createdAt: "desc" }, // Trier par date décroissante
+    orderBy: { createdAt: "desc" },
+    include: { category: true },
   });
 
   // Renvoi de la liste complète des alertes
@@ -46,6 +47,7 @@ export async function getAlertById(req: Request, res: Response) {
   // Recherche de l'alerte
   const alert = await prisma.alert.findUnique({
     where: { id },
+    include: { category: true },
   });
 
   // Gestion des erreurs

@@ -7,7 +7,7 @@ export async function fetchOverview(): Promise<Overview> {
     credentials: "include",
     cache: "no-store",
   });
-  if (!res.ok) throw new Error(`Error ${res.status} (overview)`);
+  if (!res.ok) throw new Error(`Erreur ${res.status} (overview)`);
   return res.json();
 }
 
@@ -16,6 +16,6 @@ export async function fetchMonthlyStats(): Promise<MonthlyEntry[]> {
     credentials: "include",
     cache: "no-store",
   });
-  if (!res.ok) throw new Error(`Error ${res.status} (monthly)`);
+  if (!res.ok) throw new Error(`Erreur ${res.status} (monthly)`);
   return res.json();
 }

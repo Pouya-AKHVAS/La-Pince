@@ -32,8 +32,12 @@ export async function registerUser(formData: RegisterFormData): Promise<AuthUser
       credentials: "include",
     })
     if (!response.ok) {
-      const error: ApiError = await response.json();
-      throw error
+      const contentType = response.headers.get("content-type");
+      if (contentType?.includes("application/json")) {
+        const error: ApiError = await response.json();
+        throw error;
+      }
+      throw new Error("Une erreur est survenue, réessaie.");
     }
     const data = await response.json();
     return data.user;
@@ -47,13 +51,11 @@ export async function registerUser(formData: RegisterFormData): Promise<AuthUser
       },
       body: JSON.stringify(credentials),
       credentials: "include",
-    })
+    });
     if (!response.ok) {
-      const error: ApiError = await response.json();
-      throw error
+      throw new Error("Email ou mot de passe incorrect.");
     }
-    const authResponse: AuthResponse = await response.json();
-    return authResponse;
+    return response.json();
   }
 
   export async function fetchCurrentUser(): Promise<AuthUser> {

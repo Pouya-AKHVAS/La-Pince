@@ -1,4 +1,4 @@
-import type { Budget, CreateBudgetPayload, BudgetStatus } from "../types/bugdet";
+import type { Budget, CreateBudgetPayload, BudgetStatus } from "../types/budget";
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/budgets`;
 

@@ -52,7 +52,7 @@ export default function AlertPopup({ alert, onClose }: Props ) {
 
                 {/**Badge Categorie */}
                 <span className="bg-white/20 text-white font-bold text-sm px-5 rounded-full mt-1">
-                {alert.categoryName}
+                {alert.category.name}
                 </span>
 
                 {/** Micro indication */}

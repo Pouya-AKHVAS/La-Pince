@@ -11,16 +11,25 @@ export interface TransactionPayload {
     idcategory: number;
 }
 
-// GET transactions - toutes les transactions de l'utilisateur connecté
+export interface PaginatedTransactions {
+    data: Transaction[];
+    total: number;
+    page: number;
+    totalPages: number;
+}
 
-export async function fetchTransactions():Promise<Transaction[]> {
-    const response = await fetch(API_URL, {
+// GET transactions - toutes les transactions de l'utilisateur connecté
+export async function fetchTransactions(
+    page = 1,
+    limit = 20,
+): Promise<PaginatedTransactions> {
+    const response = await fetch(`${API_URL}?page=${page}&limit=${limit}`, {
         method: "GET",
         credentials: "include",
         cache: "no-store",
     });
-    if(!response.ok) {
-        throw new Error(`Erreur${response.status} : Impossible de récuperer les transactions`);
+    if (!response.ok) {
+        throw new Error(`Erreur ${response.status} : Impossible de récupérer les transactions`);
     }
     return response.json();
 }
@@ -34,9 +43,10 @@ export async function createTransaction(data: TransactionPayload): Promise<Trans
         credentials:"include",
         body: JSON.stringify(data),
     });
-    if(!response.ok) {
+    if (!response.ok) {
         throw new Error(`Erreur ${response.status} : Impossible de créer la transaction.`);
     }
-    return response.json()
-
+    const transaction = await response.json();
+    window.dispatchEvent(new CustomEvent("transaction:created"));
+    return transaction;
 }
