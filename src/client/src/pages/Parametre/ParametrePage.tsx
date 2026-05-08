@@ -45,9 +45,6 @@ export default function ParametrePage() {
           className="absolute top-10 left-10 w-36 lg:w-55 z-50"
           alt="Logo Desktop"
         />
-        <button className="absolute top-10 right-10 bg-[#002b49] text-white px-8 py-2 rounded-full text-sm font-bold z-50 shadow-xl hover:scale-105 transition-all">
-          Déconnexion
-        </button>
       </div>
 
       {/* ------------------------------------------------------------ */}
@@ -69,9 +66,6 @@ export default function ParametrePage() {
         />
 
         {/* Déconnexion Mobile - Indépendant */}
-        <button className="absolute top-6 right-6 bg-[#002b49] text-white px-4 py-1.5 rounded-full text-[10px] font-bold z-50 shadow-lg">
-          Déconnexion
-        </button>
       </div>
 
       {/* Overlay d'éclaircissement global */}

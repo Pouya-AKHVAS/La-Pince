@@ -10,24 +10,19 @@ import {
  * ------------------------------------------------------------
  * Composant ParametreForm
  *
- * Objectif :
- *  - Afficher les informations du profil utilisateur
- *  - Permettre la modification du nom, email et mot de passe
- *  - Afficher des messages de confirmation, succès et erreur
- *  - Gérer la suppression du compte
+ * Gère :
+ *  - L'affichage des informations utilisateur
+ *  - La modification du nom, email et mot de passe
+ *  - L'affichage des erreurs backend
+ *  - La suppression du compte
  *
- * Ce composant est indépendant de ParametrePage.
- * ParametrePage ne fait qu'afficher ce formulaire.
+ * Ce composant est totalement indépendant de ParametrePage.
  * ------------------------------------------------------------
  */
 export default function ParametreForm() {
   /**
    * ------------------------------------------------------------
    * State du formulaire
-   * name      → combinaison de first_name + last_name
-   * email     → email actuel
-   * password  → nouveau mot de passe (optionnel)
-   * confirm   → confirmation du mot de passe
    * ------------------------------------------------------------
    */
   const [form, setForm] = useState({
@@ -39,9 +34,7 @@ export default function ParametreForm() {
 
   /**
    * ------------------------------------------------------------
-   * State pour gérer les erreurs renvoyées par le backend
-   * field → champ concerné (email, password…)
-   * message → message d’erreur lisible
+   * State pour afficher les erreurs renvoyées par le backend
    * ------------------------------------------------------------
    */
   const [apiError, setApiError] = useState<{
@@ -59,12 +52,14 @@ export default function ParametreForm() {
   /**
    * ------------------------------------------------------------
    * handleChange
-   * Met à jour le state du formulaire à chaque saisie
+   * Met à jour les champs du formulaire
    * ------------------------------------------------------------
    */
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-    setApiError(null); // Efface l’erreur quand l’utilisateur modifie un champ
+
+    // Efface l’erreur dès que l’utilisateur modifie un champ
+    setApiError(null);
   };
 
   /**
@@ -98,76 +93,41 @@ export default function ParametreForm() {
    * ------------------------------------------------------------
    * handleSubmit
    * Étapes :
-   *  1. Demander confirmation à l'utilisateur
-   *  2. Séparer "Nom Prénom" en first_name + last_name
-   *  3. Envoyer les données au backend
-   *  4. Afficher un message de succès ou d’erreur
+   *  1. Confirmation utilisateur
+   *  2. Séparation Nom/Prénom
+   *  3. Vérification du mot de passe
+   *  4. Envoi au backend
+   *  5. Redirection vers /login
    * ------------------------------------------------------------
    */
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    // Empêche le rechargement automatique de la page lors de la soumission du formulaire
     e.preventDefault();
 
-    // ------------------------------------------------------------
-    // 1) Demander une confirmation à l'utilisateur
-    // ------------------------------------------------------------
-    // Une boîte de dialogue apparaît pour vérifier que l'utilisateur
-    // souhaite réellement modifier ses informations.
+    // 1) Confirmation
     const confirmed = confirm(
       "Êtes-vous sûr de vouloir modifier vos informations ?",
     );
-
-    // Si l'utilisateur clique sur "Annuler", on arrête la fonction ici
     if (!confirmed) return;
 
-    // Active l'état de chargement (désactive le bouton + affiche le loader)
     setIsLoading(true);
-
-    // Réinitialise les erreurs API affichées sous les champs
     setApiError(null);
 
     try {
-      // ------------------------------------------------------------
-      // 2) Séparer le champ "Nom Prénom" en first_name + last_name
-      // ------------------------------------------------------------
-      // On découpe la chaîne en utilisant l'espace comme séparateur.
-      // Exemple : "Jean Dupont" → first_name = "Jean", last_name = "Dupont"
+      // 2) Séparation du nom complet
       const [first_name, ...rest] = form.name.trim().split(" ");
       const last_name = rest.join(" ");
 
-      // ------------------------------------------------------------
-      // 3) Vérification simple du mot de passe
-      // ------------------------------------------------------------
-      // Si l'utilisateur a saisi un mot de passe, on vérifie que
-      // la confirmation correspond. Sinon, on affiche une erreur.
+      // 3) Vérification du mot de passe
       if (form.password && form.password !== form.confirm) {
         setApiError({
           field: "confirm",
           message: "Les mots de passe ne correspondent pas.",
         });
-
-        // On arrête ici et on désactive le loader
         setIsLoading(false);
         return;
       }
 
-      // ------------------------------------------------------------
-      // 4) Envoi des données au backend via updateUserProfile()
-      // ------------------------------------------------------------
-      await updateUserProfile({
-        first_name,
-        last_name,
-        email: form.email,
-        password: form.password || undefined, // envoyé seulement si rempli
-      });
-
-      // ------------------------------------------------------------
-      // 5) Message de succès
-      // ------------------------------------------------------------
-      alert("Vos informations ont été mises à jour avec succès !");
-
-      // ------------------------------------------------------------
-
+      // 4) Envoi au backend (UNE SEULE FOIS)
       await updateUserProfile({
         first_name,
         last_name,
@@ -176,6 +136,11 @@ export default function ParametreForm() {
       });
 
       alert("Vos informations ont été mises à jour avec succès !");
+
+      // 5) Redirection vers login
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 50);
     } catch (err) {
       const error = err as { message: string; field?: string };
 
@@ -234,7 +199,6 @@ export default function ParametreForm() {
           placeholder="Nom prénom"
         />
 
-        {/* Erreurs liées au prénom ou nom */}
         {(apiError?.field === "first_name" ||
           apiError?.field === "last_name") && (
           <p className="text-red-500 text-xs ml-4">{apiError.message}</p>
