@@ -19,7 +19,11 @@ import {
  * Ce composant est totalement indépendant de ParametrePage.
  * ------------------------------------------------------------
  */
-export default function ParametreForm() {
+export default function ParametreForm({
+  selectedAvatar,
+}: {
+  selectedAvatar: string;
+}) {
   /**
    * ------------------------------------------------------------
    * State du formulaire
@@ -133,6 +137,7 @@ export default function ParametreForm() {
         last_name,
         email: form.email,
         password: form.password || undefined,
+        photo: selectedAvatar || undefined,
       });
 
       alert("Vos informations ont été mises à jour avec succès !");
