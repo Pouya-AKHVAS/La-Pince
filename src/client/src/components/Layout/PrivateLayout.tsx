@@ -10,7 +10,7 @@ export default function PrivateLayout() {
       className={`${size} rounded-full border-2 border-white shadow-lg overflow-hidden shrink-0`}
     >
       <img
-        src="/WEBP/Desktop/Lapince-Profil-Picture-Desktop.webp"
+        src={user?.photo ?? "/WEBP/Desktop/Lapince-Profil-Picture-Desktop.webp"}
         className="w-full h-full object-cover"
         alt="Photo de profil"
       />
