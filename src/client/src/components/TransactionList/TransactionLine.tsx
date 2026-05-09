@@ -43,29 +43,32 @@ export default function TransactionLine({ transaction }: Props) {
     return(
         <div className="flex items-center gap-3 py-2 px-4 border-b border-white/10">
             {/* Pastille colorée - bleue pour revenu, rose pour dépense.
-                Les couleurs reprennnent eaxctement celles des cartes RevenuCard et DepenseCard. */}
+                Les couleurs reprennnent eaxctement celles des cartes RevenuCard et DepenseCard. 
+                Modifié : plus grand (w-6 h-6) avec signe + ou - */}
 
-            <span 
-                className={`w-3 h-3 rounded-full shrink-0 ${
+            <div 
+                className={`w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-white ${
                 isRevenu ? "bg-[#74BAC2]" : "bg-[#BC8787]"
                 }`}
-            />
+            >
+                {isRevenu ? "+" : "-"}
+            </div>
             {/* Libellé : on affiche description si elle existe, sinon le nom de la catégorie.
                 L'opérateur ?? renvoie le coté droit uniquement si le gauche est null ou undefined. Différent de || qui renvoie le droit si le gauche est falsy.
                 "truncate" coupe le texte avec "..." si le nom est trop long sur mobile. */}
-            <p className="flex-1 text-sm font-medium truncat min-w-0">
+            <p className="flex-1 text-sm font-medium truncate min-w-0">
                 {transaction.description ?? transaction.category.name}
             </p>
 
-            {/* Date à droite.
-                "shrink-0" empeche cet element de rétércir si le libellé est long.
-                Sans ça, flebox comprimerait la date pour faire de la place au texte. */}
-            <span className="text-xs text-white/60 shrink-0">
+            {/* Date à droite, alignée comme dans un tableau.
+                "w-12 text-right" assure que toutes les dates font la même largeur et sont calées à droite. */}
+            <span className="text-xs text-white/60 shrink-0 w-12 text-right">
                 {formatDate(transaction.date)}
             </span>
 
-            {/* Montant tout à droite, même couleur que la pastille pour la cohérence visuelle. */}
-            <span className={`text-sm font-bold shrink-0 ${isRevenu ? "text-[#74BAC2]" : "text-[#BC8787]"}`}>
+            {/* Montant tout à droite, aligné comme dans un tableau.
+                "w-24 text-right" garantit l'alignement vertical des chiffres et du symbole €. */}
+            <span className={`text-sm font-bold shrink-0 w-24 text-right ${isRevenu ? "text-[#74BAC2]" : "text-[#BC8787]"}`}>
                 {formatAmount(transaction.amount, transaction.category.type)}
             </span>
 

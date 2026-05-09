@@ -14,8 +14,8 @@ import { fetchAlerts, markAlertAsRead } from "../../services/alertApi";
  */
 import { StatsCards } from "./components/StatsCards";
 import { MonthlyChart } from "./components/MonthlyChart";
-import { TransactionFilters } from "./components/TransactionFilters";
-import { TransactionTable } from "./components/TransactionTable";
+import TransactionSheet from "../../components/TransactionList/TransactionSheet";
+import BudgetProgressList from "../../components/Budget/BudgetProgressList";
 
 /**
  * Données de secours (Mock) pour le graphique si aucune donnée n'est présente en base.
@@ -40,13 +40,6 @@ export default function DashboardPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [currentAlertIndex, setCurrentAlertIndex] = useState<number | null>(null);
-
-  // --- ÉTATS DES FILTRES ---
-  const [search, setSearch] = useState("");
-  const [filterType, setFilterType] = useState<"ALL" | "INCOME" | "EXPENSE">("ALL");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
 
   /**
    * Chargement initial des données depuis l'API.
@@ -86,32 +79,6 @@ export default function DashboardPage() {
     observer.observe(footerRef.current);
     return () => observer.disconnect();
   }, []);
-
-  // --- LOGIQUE DE FILTRAGE (Mémorisée pour la performance) ---
-  const filteredTransactions = useMemo(() => {
-    return transactions.filter((t) => {
-      const matchesType = filterType === "ALL" || t.category.type === filterType;
-      const matchesSearch = t.description?.toLowerCase().includes(search.toLowerCase());
-
-      const tDate = new Date(t.date).getTime();
-      const start = startDate ? new Date(startDate).getTime() : -Infinity;
-      const end = endDate ? new Date(endDate).getTime() : Infinity;
-      const matchesDate = tDate >= start && tDate <= end;
-
-      const matchesCategory = selectedCategoryIds.length === 0 || selectedCategoryIds.includes(t.category.id);
-
-      return matchesType && matchesSearch && matchesDate && matchesCategory;
-    });
-  }, [transactions, filterType, search, startDate, endDate, selectedCategoryIds]);
-
-  /**
-   * Gère l'ajout/suppression d'une catégorie dans la multi-sélection.
-   */
-  const toggleCategory = (id: number) => {
-    setSelectedCategoryIds(prev =>
-      prev.includes(id) ? prev.filter(catId => catId !== id) : [...prev, id]
-    );
-  };
 
   // --- LOGIQUE DE CALCUL DU GRAPHIQUE (Mémorisée) ---
   const chartData = useMemo(() => {
@@ -160,6 +127,13 @@ export default function DashboardPage() {
 
   const currentAlert = currentAlertIndex !== null ? alerts[currentAlertIndex] : null;
 
+  // Tri des transactions pour la sheet (plus récent en haut)
+  const transactionsSorted = useMemo(() => {
+    return [...transactions].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+  }, [transactions]);
+
   return (
     <main className="fixed inset-0 w-full h-full bg-[#cbd5e1] overflow-hidden font-sans text-[#002b49]">
 
@@ -197,30 +171,14 @@ export default function DashboardPage() {
           {/* Rendu du graphique Recharts */}
           <MonthlyChart data={chartData} />
 
-          {/* Section Liste des transactions avec ses propres filtres */}
-          <section className="bg-white/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/40 mb-10">
-            <TransactionFilters
-              search={search}
-              onSearchChange={setSearch}
-              filterType={filterType}
-              onFilterTypeChange={setFilterType}
-              startDate={startDate}
-              onStartDateChange={setStartDate}
-              endDate={endDate}
-              onEndDateChange={setEndDate}
-              categories={categories}
-              selectedCategoryIds={selectedCategoryIds}
-              onToggleCategory={toggleCategory}
-              onClearCategories={() => setSelectedCategoryIds([])}
-            />
-
-            <TransactionTable transactions={filteredTransactions} />
-          </section>
+          <BudgetProgressList />
         </div>
       </div>
 
       {/* Popups d'alertes (BNPL, dépassements, etc.) */}
       {currentAlert && <AlertPopup key={currentAlert.id} alert={currentAlert} onClose={handleCloseAlert} />}
+
+      <TransactionSheet transactions={transactionsSorted} footerHeight={footerHeight} />
 
       {/* Footer fixe en bas */}
       <footer ref={footerRef} className="absolute bottom-0 left-0 w-full z-[60]">

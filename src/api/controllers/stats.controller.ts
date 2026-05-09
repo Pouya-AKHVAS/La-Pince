@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import * as statsService from "../services/stats.service.ts";
+import * as budgetService from "../services/budget.service.ts"; // Import du service de budget pour calculer les stats de budget dans le dashboard. Cela permet de séparer la logique métier (dans le service) de la gestion des requêtes/réponses (dans le contrôleur), rendant le code plus propre et plus facile à maintenir.
 
 /**
  * Contrôleur pour GET /stats/overview
@@ -76,11 +77,17 @@ export const getBudgetStats = async (req: Request, res: Response) => {
       return res.status(401).json({ message: "Utilisateur non authentifié" });
     }
 
-    const data = await statsService.getBudgetStats(req.user.id);
+    // Extraction des paramètres optionnels pour l'historique
+    const month = req.query.month ? parseInt(req.query.month as string) : undefined;
+    const year = req.query.year ? parseInt(req.query.year as string) : undefined;
 
-    // data = [ { budgetId, category, limit, spent, remaining, percent }, ... ]
+    // MUTUALISATION : Appel au service budget pour la précision et l'historique
+    const data = await budgetService.getBudgetMonthlyStats(req.user.id, month, year);
+
+    // data = [ { id, categoryName, limitAmount, spentAmount, remainingAmount, percent, ... }, ... ]
     return res.status(200).json(data);
   } catch (err) {
-    return res.status(500).json({ message: "Erreur serveur (budgets)" });
+    console.error("Erreur stats budgets:", err);
+    return res.status(500).json({ message: "Erreur serveur (budgets stats)" });
   }
 };
