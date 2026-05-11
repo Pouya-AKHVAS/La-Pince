@@ -137,6 +137,7 @@ export default function BudgetCard() {
         />
         <button
           type="submit"
+          disabled={isLoading}
           className="mt-0.5 px-4 py-0.5 bg-white/50 hover:bg-white/80 text-[#002b49] text-[8px] md:text-[9px] font-black uppercase rounded-full transition-all"
         >
           Ajouter
