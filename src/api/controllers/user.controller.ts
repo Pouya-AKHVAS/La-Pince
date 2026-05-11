@@ -77,6 +77,7 @@ export async function updateMe(req: Request, res: Response) {
             last_name: true,
             email: true,
             photo: true,
+            createdAt: true,
             updatedAt: true,
         },
     });

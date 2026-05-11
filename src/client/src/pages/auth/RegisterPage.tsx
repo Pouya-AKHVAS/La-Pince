@@ -23,7 +23,8 @@ export default function RegisterPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const user = await registerUser({ ...data, photo: selectedAvatar || undefined });
+      const defaultAvatar = `https://api.dicebear.com/9.x/lorelei/svg?seed=${avatarSeeds[0]}`;
+      const user = await registerUser({ ...data, photo: selectedAvatar || defaultAvatar });
       setSuccessMessage("Inscription réalisée avec succès !");
       setTimeout(() => {
         login(user);

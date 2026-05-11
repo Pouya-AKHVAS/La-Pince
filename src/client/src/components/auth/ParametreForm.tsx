@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import {
   fetchUserProfile,
   updateUserProfile,
   deleteUserAccount,
 } from "../../services/user";
+import { useAuth } from "../../context/AuthContext";
+import type { AuthUser } from "../../types/auth";
 
 /**
  * ------------------------------------------------------------
@@ -24,6 +27,8 @@ export default function ParametreForm({
 }: {
   selectedAvatar: string;
 }) {
+  const { login, logout } = useAuth();
+  const navigate = useNavigate();
   /**
    * ------------------------------------------------------------
    * State du formulaire
@@ -130,7 +135,7 @@ export default function ParametreForm({
       }
 
       // 4) Envoi au backend (UNE SEULE FOIS)
-      await updateUserProfile({
+      const updatedUser = await updateUserProfile({
         first_name: form.first_name,
         last_name: form.last_name,
         email: form.email,
@@ -138,12 +143,8 @@ export default function ParametreForm({
         photo: selectedAvatar || undefined,
       });
 
+      login(updatedUser as AuthUser);
       alert("Vos informations ont été mises à jour avec succès !");
-
-      // 5) Redirection vers login
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 50);
     } catch (err) {
       const error = err as { message: string; field?: string };
 
@@ -168,7 +169,8 @@ export default function ParametreForm({
     try {
       await deleteUserAccount();
       alert("Compte supprimé");
-      window.location.href = "/login";
+      await logout();
+      navigate("/login");
     } catch (err) {
       alert("Erreur lors de la suppression : " + err);
     }

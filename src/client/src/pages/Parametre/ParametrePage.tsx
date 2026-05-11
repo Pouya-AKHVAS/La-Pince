@@ -8,22 +8,23 @@ import Footer from "../../components/Footer/footer";
  */
 export default function ParametrePage() {
   // --- NOUVEAU : Gestion des avatars (remplace l’upload de photo) ---
-  const [selectedAvatar, setSelectedAvatar] = useState<string>("");
-  const [showPicker, setShowPicker] = useState(false);
   const [avatarSeeds] = useState<string[]>(() =>
     Array.from({ length: 8 }, () => Math.random().toString(36).slice(2, 10)),
   );
+  const [selectedAvatar, setSelectedAvatar] = useState<string>("");
+  const [showPicker, setShowPicker] = useState(false);
 
   // --- CHARGEMENT DE L’AVATAR DEPUIS LE BACKEND ---
   useEffect(() => {
     async function loadUser() {
       try {
         const user = await fetchUserProfile();
-        if (user.photo) {
-          setSelectedAvatar(user.photo);
-        }
+        setSelectedAvatar(
+          user.photo || `https://api.dicebear.com/9.x/lorelei/svg?seed=${avatarSeeds[0]}`
+        );
       } catch (err) {
         console.error("Erreur chargement avatar :", err);
+        setSelectedAvatar(`https://api.dicebear.com/9.x/lorelei/svg?seed=${avatarSeeds[0]}`);
       }
     }
 
