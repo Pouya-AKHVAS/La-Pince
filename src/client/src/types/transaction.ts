@@ -10,4 +10,5 @@ export type Transaction = {
     name: string;
     type: "EXPENSE" | "INCOME";
   };
+  icon: string | null;
 };

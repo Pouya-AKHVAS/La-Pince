@@ -1,5 +1,13 @@
 import { useState, useEffect, useRef } from "react";
+import * as Icons from "lucide-react";
 import type { Category } from "../../types/category.js";
+
+function CategoryIcon({ name }: { name: string | null }) {
+  if (!name) return null;
+  const Icon = (Icons as unknown as Record<string, React.FC<{ size?: number; className?: string }>>)[name];
+  if (!Icon) return null;
+  return <Icon size={14} className="shrink-0" />;
+}
 
 interface CategorySelectProps {
   categories: Category[];
@@ -46,7 +54,8 @@ export default function CategorySelect({
           onClick={() => setOpen(!open)}
           className="w-full flex items-center justify-between gap-1 px-3 py-1 focus:outline-none"
         >
-          <span className={`flex-1 text-center text-[#002b49] font-bold truncate ${small ? "text-sm" : "text-base"}`}>
+          <span className={`flex-1 flex items-center gap-1.5 text-[#002b49] font-bold truncate ${small ? "text-sm" : "text-base"}`}>
+            {selectedCategory && <CategoryIcon name={selectedCategory.icon} />}
             {selectedCategory ? selectedCategory.name : "Catégorie"}
           </span>
           <span className={`text-white text-[10px] transition-transform duration-300 ${open ? "rotate-180" : ""}`}>
@@ -72,8 +81,9 @@ export default function CategorySelect({
                   setOpen(false);
                 }}
                 /* 3. On garde le texte sombre sur fond orange, avec un hover plus clair */
-                className="w-full text-left px-3 py-2 text-[#002b49] text-sm font-medium hover:bg-orange-400 transition-colors border-t border-white/20"
+                className="w-full flex items-center gap-2 px-3 py-2 text-[#002b49] text-sm font-medium hover:bg-orange-400 transition-colors border-t border-white/20"
               >
+                <CategoryIcon name={cat.icon} />
                 {cat.name || "Sans nom"}
               </button>
             );
