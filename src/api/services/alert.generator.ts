@@ -40,10 +40,9 @@ export const generateBudgetAlert = async (budgetId: number, userId: number) => {
   const transactionsForCategory = await prisma.transaction.findMany({
     where: { userId, categoryId: budget.category.id },
   });
-  const spent = transactionsForCategory.reduce(
-    (sum: number, t: { amount: any }) => sum + Number(t.amount),
-    0,
-  );
+  // Les dépenses sont stockées en positif → on somme directement
+  const spent = transactionsForCategory
+    .reduce((sum, t) => sum + Number(t.amount), 0);
 
   // 3. Si le budget n'est pas dépassé → aucune alerte
   if (spent <= budget.limit_amount) return null;
@@ -59,8 +58,18 @@ export const generateBudgetAlert = async (budgetId: number, userId: number) => {
     },
   });
 
-  // Si une alerte existe déjà → ne pas en créer une nouvelle
-  if (existingAlert) return existingAlert;
+  if (existingAlert) {
+    // L'alerte a déjà été lue → on la remet en non-lue avec le montant à jour
+    // pour que l'utilisateur soit re-notifié du nouveau dépassement
+    if (existingAlert.isRead) {
+      return await prisma.alert.update({
+        where: { id: existingAlert.id },
+        data: { isRead: false, exceededAmount },
+      });
+    }
+    // Alerte déjà non-lue → pas de doublon
+    return existingAlert;
+  }
 
   // 6. Créer une nouvelle alerte
   const alert = await prisma.alert.create({

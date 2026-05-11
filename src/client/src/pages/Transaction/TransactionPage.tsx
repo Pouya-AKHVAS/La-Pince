@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { fetchTransactions, type Transaction } from "../../services/transactionApi"; //Imports Transactions
+import {
+  fetchTransactions,
+  type Transaction,
+} from "../../services/transactionApi"; //Imports Transactions
 
 import Footer from "../../components/Footer/footer";
 import DepenseCard from "../../components/CategoryCard/DepenseCard";
@@ -10,8 +13,7 @@ import TransactionSheet from "../../components/TransactionList/TransactionSheet"
 import AlertPopup from "../../components/Alert/AlertPopup";
 
 import type { Alert } from "../../types/alert";
-import { fetchAlerts, markAlertAsRead, markAllAlertsAsRead } from "../../services/alertApi";
-
+import { fetchAlerts, markAlertAsRead } from "../../services/alertApi";
 
 // Page placeholder — sera remplacée par la version de Marie
 export default function TransactionPage() {
@@ -30,7 +32,19 @@ export default function TransactionPage() {
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
-  //Transactions
+  const loadAlerts = async () => {
+    try {
+      const data = await fetchAlerts();
+      const unread = data.filter((a) => !a.isRead);
+      if (unread.length > 0) {
+        setAlerts(unread);
+        setCurrentAlertIndex(0);
+      }
+    } catch (error) {
+      console.error("Erreur chargements alerts :", error);
+    }
+  };
+
   const load = async () => {
     try {
       const data = await fetchTransactions();
@@ -38,7 +52,52 @@ export default function TransactionPage() {
     } catch (error) {
       console.error("Erreur chargement transactions :", error);
     }
+    // on recharge les alertes après chaque transaction pour refléter les dépassements en temps réel
+    await loadAlerts();
   };
+
+  // --- AJOUT : suppression d’une transaction ---
+  async function handleDelete(id: number) {
+    try {
+      await fetch(`${import.meta.env.VITE_API_BASE_URL}/transactions/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      // Mise à jour locale
+      setTransactions((prev) => prev.filter((t) => t.id !== id));
+    } catch (error) {
+      console.error("Erreur suppression transaction :", error);
+    }
+  }
+
+  // --- AJOUT : mise à jour d’une transaction ---
+  async function handleUpdate(updated: Transaction) {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/transactions/${updated.id}`,
+        {
+          method: "PATCH",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updated),
+        },
+      );
+
+      const saved = await res.json();
+
+      // --- Correction : on conserve la catégorie existante si l’API ne la renvoie pas ---
+      setTransactions((prev) =>
+        prev.map((t) =>
+          t.id === saved.id
+            ? { ...t, ...saved } // ← fusion propre, évite category = undefined
+            : t,
+        ),
+      );
+    } catch (error) {
+      console.error("Erreur mise à jour transaction :", error);
+    }
+  }
 
   const solde = transactions.reduce((sum, t) => {
     return t.category.type === "INCOME"
@@ -46,29 +105,12 @@ export default function TransactionPage() {
       : sum - Number(t.amount);
   }, 0);
 
-  // transactions update
-
   useEffect(() => {
-    load();
-  }, []);
-
-  // Alerts
-
-  useEffect(()=> {
-    const loadAlerts = async() =>{
-      try{
-        const data = await fetchAlerts();
-        // On ne montre ques les alertes non lues
-        const unread = data.filter((a) => !a.isRead);
-          if (unread.length > 0) {
-            setAlerts(unread)
-            setCurrentAlertIndex(0)
-          }
-      } catch(error) {
-        console.error("Erreur chargements alerts :",error)
-      }
-    };
-    loadAlerts();
+    // --- AJOUT : exécution asynchrone pour éviter setState direct ---
+    (async () => {
+      await load();
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -80,18 +122,18 @@ export default function TransactionPage() {
     return () => observer.disconnect();
   }, []);
 
-const transactionsSorted = [...transactions].sort(
-  (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-);
+  const transactionsSorted = [...transactions].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+  );
 
   function handleCloseAlert() {
     if (currentAlertIndex === null) return;
 
-    const alert = alerts[currentAlertIndex]
+    const alert = alerts[currentAlertIndex];
     // Fire-and-forget : on n'attend pas la réponse pour fluidifier l'UI
-    markAlertAsRead(alert.id).catch(console.error)
+    markAlertAsRead(alert.id).catch(console.error);
 
-    const nextIndex = currentAlertIndex+1
+    const nextIndex = currentAlertIndex + 1;
     if (nextIndex < alerts.length) {
       setCurrentAlertIndex(nextIndex); // alerte suivante
     } else {
@@ -196,9 +238,15 @@ const transactionsSorted = [...transactions].sort(
       <TransactionSheet
         transactions={transactionsSorted}
         footerHeight={footerHeight}
+        onDelete={handleDelete} // ← AJOUT
+        onUpdate={handleUpdate} // ← AJOUT
       />
-      <footer ref={footerRef} className="absolute bottom-0 left-0 w-full z-[60]">
-        <Footer showIcons activeIds={["landingpage", "params"]} />
+
+      <footer
+        ref={footerRef}
+        className="absolute bottom-0 left-0 w-full z-[60]"
+      >
+        <Footer showIcons activeIds={["landingpage", "dashboard", "params"]} />
       </footer>
     </main>
   );

@@ -73,7 +73,7 @@ model Transaction {
 
   // Relations
   category Category @relation(fields: [categoryId], references: [id])
-  User     User     @relation(fields: [userId], references: [id])
+  User     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   budget   Budget?  @relation(fields: [budgetId], references: [id])
   budgetId Int?
 
