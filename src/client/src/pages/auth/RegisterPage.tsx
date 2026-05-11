@@ -154,9 +154,6 @@ export default function RegisterPage() {
 
 
 
-
-
-
         {/* Cadre du Formulaire */}
         <section className="w-full max-w-[440px] bg-white/20 backdrop-blur-3xl rounded-[2.5rem] p-6 md:p-10 shadow-2xl border border-white/30 mb-8 shrink-0 relative">
           <RegisterForm
@@ -166,7 +163,7 @@ export default function RegisterPage() {
           />
         </section>
 
-   
+  
              {/* Message suivant l'inscription */}
       {successMessage && (
   <p className="text-base font-bold text-black mb-10">

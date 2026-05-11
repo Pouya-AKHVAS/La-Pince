@@ -32,6 +32,7 @@ export default function LoginPage() {
       navigate("/accueil");
       }, 2000);
     } catch (err) {
+      console.error(err)
       const newCount = attemptCount + 1
       setAttemptCount(newCount)
 
