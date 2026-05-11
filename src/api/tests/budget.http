@@ -2,7 +2,7 @@
 ### VARIABLES
 ### -----------------------------------------
 @baseUrl = http://localhost:3007
-@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjQsImVtYWlsIjoicG91cmxldGVzdEBleGFtcGxlLmNvbSIsImlhdCI6MTc3NzkzMjk4MSwiZXhwIjoxNzc3OTMzODgxLCJhdWQiOiJhY2Nlc3MifQ.l970YZrtGFdpySksOo_lhCbbFTLVTZ1dRVJOD1GCxb4
+@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjQsImVtYWlsIjoicG91cmxldGVzdEBleGFtcGxlLmNvbSIsImlhdCI6MTc3ODA5OTM3OCwiZXhwIjoxNzc4MTAwMjc4LCJhdWQiOiJhY2Nlc3MifQ.Rzbk2gPFPVjwBij0tKovOCZNR0gLm0ty3PzTVHRUquc
 GET {{baseUrl}}/budgets
 Authorization: {{token}}
 
@@ -29,7 +29,7 @@ Content-Type: application/json
 }
 
 ### 4. Récupérer un budget par ID
-GET {{baseUrl}}/budgets/10
+GET {{baseUrl}}/budgets/2
 Authorization: {{token}}
 
 ### 5. Récupérer un budget inexistant → 404

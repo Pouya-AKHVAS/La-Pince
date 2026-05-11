@@ -6,6 +6,7 @@
 // de la gestion des requêtes HTTP, rendant le code plus propre
 // et plus facile à maintenir.
 
+import { ca, id } from "zod/locales";
 import { prisma } from "../lib/prisma.js";
 
 // -------------------------------------------------------------
@@ -135,4 +136,65 @@ export const getBudgetStatus = async (budgetId: number, userId: number) => {
     remaining,
     percent,
   };
+};
+
+// -------------------------------------------------------------
+// 7. Statistiques Budgétaires (Hybride : Mensuel ou Global)
+// -------------------------------------------------------------
+export const getBudgetMonthlyStats = async (userId: number, month?: number, year?: number) => {
+  const now = new Date();
+  
+  // Si month et year sont fournis, on crée une fenêtre temporelle.
+  // Sinon, on utilise le mois et l'année en cours par défaut.
+  const targetMonth = month !== undefined ? month - 1 : now.getMonth();
+  const targetYear = year || now.getFullYear();
+
+  const startDate = new Date(targetYear, targetMonth, 1);
+  const endDate = new Date(targetYear, targetMonth + 1, 0, 23, 59, 59);
+
+  // 1. Récupération des budgets de l'utilisateur
+  const budgets = await prisma.budget.findMany({
+    where: { userId },
+    include: {
+      category: true,
+    },
+  });
+
+  // 2. Calcul du réel pour chaque budget via Promise.all
+  return await Promise.all(
+    budgets.map(async (budget: any) => {
+      // On somme toutes les transactions de la même catégorie pour le mois cible
+      const aggregateResult = await prisma.transaction.aggregate({
+        where: {
+          userId,
+          categoryId: budget.id_category, // Filtrage par catégorie
+          date: {
+            gte: startDate,
+            lte: endDate,
+          },
+        },
+        _sum: {
+          amount: true,
+        },
+      });
+
+      const spent = Number(aggregateResult._sum.amount) || 0;
+      const limit = Number(budget.limit_amount);
+      
+      const realPercent = limit > 0 ? (spent / limit) * 100 : 0;
+
+      return {
+        id: budget.id,
+        categoryName: budget.category.name,
+        icon: budget.category.icon,
+        color: budget.category.color,
+        limitAmount: limit,
+        spentAmount: spent,
+        remainingAmount: Math.max(limit - spent, 0),
+        percent: Math.min(realPercent, 100),
+        realPercent: realPercent,
+        period: { month: targetMonth + 1, year: targetYear },
+      };
+    })
+  );
 };
