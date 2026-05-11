@@ -1,7 +1,4 @@
-// Ce composant ne fait aucune logique métier, il ne fait qu'afficher le formulaire et remonter les événements au parent.
-// Il attend 3 props : la fonction onSubmit, l'état isLoading et l'état error.
-// C'est le composant enfant de LoginPage, il reçoit la fonction à appeler lors de la soumission du formulaire, ainsi que les états d'erreur et de chargement.
-import { useState, type FormEvent } from "react"; // Ajout de 'type' pour verbatimModuleSyntax
+import { useState, type FormEvent } from "react";
 import type { LoginCredentials } from "../../services/authApi";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 
@@ -16,9 +13,9 @@ export default function LoginForm({
   isLoading,
   error,
 }: LoginFormProps) {
-  const [email, setEmail] = useState(""); // On crée un état local pour chaque champ du formulaire, pour pouvoir les contrôler et les envoyer au parent lors de la soumission.
-  const [password, setPassword] = useState(""); // Même chose pour le mot de passe
-  const [showPassword, setShowPassword] = useState(false); //Contrôle la visibilité du mot de passe (true = visible, false = masqué)
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   /**
    * Utilisation de FormEvent avec le type générique HTMLFormElement
@@ -66,27 +63,24 @@ export default function LoginForm({
           Mot de passe
         </label>
         <div className="flex items-center gap-2">
-        <input
-          id="password"
-          type={showPassword ? "text" : "password"}
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="mot de passe"
-          className="w-full px-4 py-2.5 rounded-full bg-white/80 border-none text-[13px] shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-blue-500 text-[#002b49]"
-          disabled={isLoading}
+          <input
+            id="password"
+            type={showPassword ? "text" : "password"}
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="mot de passe"
+            className="w-full px-4 py-2.5 rounded-full bg-white/80 border-none text-[13px] shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-blue-500 text-[#002b49]"
+            disabled={isLoading}
           />
-
-          
-
-      <button
-      type="button"
-      onClick={() => setShowPassword(!showPassword)}
-            className="text-[#002b49]/60 hover:text-[#002b49] transition-colors shrink-0"
+          <button
+            type="button"
+            onMouseDown={() => setShowPassword(true)}
+            onMouseUp={() => setShowPassword(false)}
+            onMouseLeave={() => setShowPassword(false)}
           >
             {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
-  
         </div>
       </div>
 

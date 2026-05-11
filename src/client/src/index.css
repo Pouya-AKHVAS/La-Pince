@@ -3,18 +3,19 @@
 
 /* 2. CONFIGURATION DES VARIABLES */
 :root {
-  --sans: 'Afacad', system-ui, sans-serif;
+  --sans: "Afacad", system-ui, sans-serif;
   font-family: var(--sans);
 }
 
 /* 4. RESET TOTAL POUR LE LAYOUT */
-html, body, #root {
+html,
+body,
+#root {
   margin: 0;
   padding: 0;
   width: 100%;
   height: 100vh;
-  overflow: hidden; 
-  
+  overflow: hidden;
 }
 
 * {
@@ -22,35 +23,40 @@ html, body, #root {
 }
 
 @theme {
-  --font-sans: 'Afacad', system-ui, sans-serif;
-
+  --font-sans: "Afacad", system-ui, sans-serif;
   --animate-slide-up: slideUp 0.3s ease-out forwards;
 
   @keyframes slideUp {
-    0%   { transform: translateY(40px); opacity: 0; }
-    100% { transform: translateY(0);    opacity: 1; }
+    0% {
+      transform: translateY(40px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
   }
+
 }
 
 /* On cible la div avec overflow-y-auto */
 .overflow-y-auto::-webkit-scrollbar {
-    width: 8px !important;
+  width: 8px !important;
 }
 
 /* Le fond de la barre : on force ton orange */
 .overflow-y-auto::-webkit-scrollbar-track {
-    background-color: #FF7F00 !important;
+  background-color: #ff7f00 !important;
 }
 
 /* Le curseur qui bouge : orange plus clair et arrondi */
 .overflow-y-auto::-webkit-scrollbar-thumb {
-    background-color: #ff9f40 !important;
-    border-radius: 10px !important;
-    border: 2px solid #FF7F00 !important;
+  background-color: #ff9f40 !important;
+  border-radius: 10px !important;
+  border: 2px solid #ff7f00 !important;
 }
 
-/* LA MÉTHODE RADICALE POUR LES FLÈCHES */
-/* On cible tous les composants des boutons (flèches) */
+/* Cible tous les composants des boutons (flèches) */
 .overflow-y-auto::-webkit-scrollbar-button:single-button,
 .overflow-y-auto::-webkit-scrollbar-button:start,
 .overflow-y-auto::-webkit-scrollbar-button:end,
@@ -58,13 +64,13 @@ html, body, #root {
 .overflow-y-auto::-webkit-scrollbar-button:vertical:start:decrement,
 .overflow-y-auto::-webkit-scrollbar-button:vertical:end:increment,
 .overflow-y-auto::-webkit-scrollbar-button:vertical:end:decrement {
-    display: none !important;
-    height: 0 !important;
-    width: 0 !important;
-    background-color: transparent !important; /* Au cas où le display:none est ignoré */
+  display: none !important;
+  height: 0 !important;
+  width: 0 !important;
+  background-color: transparent !important; /* Au cas où le display:none est ignoré */
 }
 
 /* Pour masquer les coins de la scrollbar */
 .overflow-y-auto::-webkit-scrollbar-corner {
-    background-color: transparent !important;
+  background-color: transparent !important;
 }
