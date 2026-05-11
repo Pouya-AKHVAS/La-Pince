@@ -15,12 +15,13 @@ export default function BudgetCard() {
   const [categorie, setCategorie] = useState("");
   const [montant, setMontant] = useState("");
   const [mois, setMois] = useState("");
-
+  
 
   //Budget
 
-  const [_isLoading, setIsLoading] = useState(false);
-  const [_error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [messageSuccess, setMessageSuccess] = useState<string | null>(null);
 
     // 4. Chargement des données au montage du composant
   useEffect(() => {
@@ -107,6 +108,11 @@ export default function BudgetCard() {
   </p>
 )}
 
+{error && (
+  <p className="text-[8px] md:text-[9px] font-bold text-red-700 bg-white/80 px-2 py-0.5 rounded-full">
+    ✕ {error}
+  </p>
+)}
   
 
       {/* Formulaire */}
