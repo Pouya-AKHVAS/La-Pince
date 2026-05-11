@@ -9,6 +9,6 @@ export type Transaction = {
     id: number;
     name: string;
     type: "EXPENSE" | "INCOME";
+    icon: string | null;
   };
-  icon: string | null;
 };

@@ -1,5 +1,4 @@
 import * as Icons from "lucide-react";
-import type { LucideProps } from "lucide-react";
 
 import type { Transaction } from "../../types/transaction.js";
 
@@ -12,7 +11,7 @@ import type { Transaction } from "../../types/transaction.js";
 
 function CategoryIcon({ name }: { name: string | null }) {
   if (!name) return null;
-  const Icon = (Icons as Record<string, React.FC<LucideProps>>)[name];
+  const Icon = (Icons as unknown as Record<string, React.FC<{ size?: number }>>)[name];
   if (!Icon) return null;
   return <Icon size={14} />;
 }
