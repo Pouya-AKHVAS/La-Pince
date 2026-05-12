@@ -14,6 +14,7 @@ import AlertPopup from "../../components/Alert/AlertPopup";
 import { useAlerts } from "../../hooks/useAlerts";
 import { fetchOverview } from "../../services/statsApi";
 import type { Overview } from "../../types/stats";
+import { useTransactions } from "../../hooks/useTransactions";
 
 export default function TransactionPage() {
   const { currentAlert, handleCloseAlert, loadAlerts } = useAlerts();
@@ -22,6 +23,7 @@ export default function TransactionPage() {
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [overview, setOverview] = useState<Overview | null>(null);
+  const { remove, update } = useTransactions();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -87,54 +89,6 @@ export default function TransactionPage() {
         <p className="text-red-600 font-bold text-lg">{error}</p>
       </main>
     );
-  }
-  // --- AJOUT : suppression d’une transaction ---
-  async function handleDelete(id: number) {
-    try {
-      await fetch(`${import.meta.env.VITE_API_BASE_URL}/transactions/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-
-      // Mise à jour locale
-      setTransactions((prev) => prev.filter((t) => t.id !== id));
-      await load();
-      await loadAlerts();
-    } catch (error) {
-      console.error("Erreur suppression transaction :", error);
-    }
-  }
-
-  // --- AJOUT : mise à jour d’une transaction ---
-  async function handleUpdate(updated: Transaction) {
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/transactions/${updated.id}`,
-        {
-          method: "PATCH",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updated),
-        },
-      );
-
-      const saved = await res.json();
-
-      // --- Correction : on conserve la catégorie existante si l’API ne la renvoie pas ---
-      setTransactions((prev) =>
-        prev.map((t) =>
-          t.id === saved.id
-            ? { ...t, ...saved } // ← fusion propre, évite category = undefined
-            : t,
-        ),
-      );
-      // --- AJOUT : recharge overview + budgets + alerts ---
-
-      await load();
-      await loadAlerts();
-    } catch (error) {
-      console.error("Erreur mise à jour transaction :", error);
-    }
   }
 
   return (
@@ -264,10 +218,14 @@ export default function TransactionPage() {
                 className="flex-1 py-2 rounded-lg bg-red-600 text-white font-bold"
                 onClick={async () => {
                   if (confirmData.action === "delete") {
-                    await handleDelete(confirmData.payload);
+                    await remove(confirmData.payload);
                   } else if (confirmData.action === "update") {
-                    await handleUpdate(confirmData.payload);
+                    await update(confirmData.payload);
                   }
+
+                  await load();
+                  await loadAlerts();
+
                   setConfirmData(null);
                 }}
               >
@@ -284,12 +242,15 @@ export default function TransactionPage() {
             <h2 className="text-lg font-bold mb-4">Modifier la transaction</h2>
 
             <form
+              className="space-y-3"
               onSubmit={(e) => {
                 e.preventDefault();
-                handleUpdate(editingTransaction);
+                setConfirmData({
+                  action: "update",
+                  payload: editingTransaction,
+                });
                 setEditingTransaction(null);
               }}
-              className="space-y-3"
             >
               {/* Champ Description */}
               <input

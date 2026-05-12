@@ -3,8 +3,7 @@ import {
   fetchTransactions,
   type Transaction,
 } from "../../services/transactionApi";
-import { fetchOverview, fetchMonthlyStats } from "../../services/statsApi";
-import type { Overview, MonthlyEntry } from "../../types/stats";
+
 import { useAlerts } from "../../hooks/useAlerts";
 
 import Footer from "../../components/Footer/footer";
@@ -16,15 +15,20 @@ import { MonthlyChart } from "./components/MonthlyChart";
 import { TransactionFilters } from "./components/TransactionFilters";
 import { TransactionTable } from "./components/TransactionTable";
 import TransactionSheet from "../../components/TransactionList/TransactionSheet";
+import { useTransactions } from "../../hooks/useTransactions";
+import { useStats } from "../../hooks/useStats";
+import type { MonthlyEntry } from "../../types/stats";
 
 export default function DashboardPage() {
-  const { currentAlert, handleCloseAlert, loadAlerts } = useAlerts();
+  const { currentAlert, handleCloseAlert } = useAlerts();
   const footerRef = useRef<HTMLElement>(null);
   const [footerHeight, setFooterHeight] = useState(0);
 
+  // --- AJOUT : les statistiques globales viennent désormais du hook useStats ---
+  const { overview, monthly, loadStats } = useStats();
+
   // --- Données venant de l'API ---
-  const [overview, setOverview] = useState<Overview | null>(null);
-  const [monthly, setMonthly] = useState<MonthlyEntry[]>([]);
+  // --- AJOUT : seules les transactions restent gérées localement ici ---
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   // --- États des filtres ---
@@ -57,7 +61,6 @@ export default function DashboardPage() {
       const matchesCategory =
         selectedCategories.length === 0 ||
         selectedCategories.includes(t.category.id);
-
       return (
         matchesType &&
         matchesSearch &&
@@ -153,25 +156,24 @@ export default function DashboardPage() {
     );
   };
 
+  const { remove, update } = useTransactions();
+
+  // --- AJOUT : loadData utilise désormais loadStats (hook) au lieu de fetch direct ---
   const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
+
     try {
-      const [trans, ov, mo] = await Promise.all([
-        fetchTransactions(),
-        fetchOverview(),
-        fetchMonthlyStats(),
-        loadAlerts(),
-      ]);
+      const trans = await fetchTransactions();
       setTransactions(trans.data);
-      setOverview(ov);
-      setMonthly(mo);
+
+      await loadStats(); // ← centralisation des stats + alerts
     } catch {
       setError("Impossible de charger les données.");
     } finally {
       setLoading(false);
     }
-  }, [loadAlerts]);
+  }, [loadStats]);
 
   useEffect(() => {
     (async () => {
@@ -208,17 +210,22 @@ export default function DashboardPage() {
   return (
     <main className="fixed inset-0 w-full h-full overflow-hidden font-sans text-[#002b49]">
       <AnimatedOrbBackground />
+
+      {/* Arrière-plan */}
       <img
         src="/WEBP/Desktop/Lapince-Hero-Background-Desktop.webp"
         className="absolute bottom-0 left-0 w-[60vw] opacity-20 object-contain origin-bottom-left z-0 pointer-events-none select-none"
         aria-hidden="true"
         alt=""
       />
+
+      {/* Overlay */}
       <div
         className="absolute inset-0 bg-white/30 z-10 pointer-events-none"
         aria-hidden="true"
       />
 
+      {/* Logos */}
       <img
         src="/WEBP/Mobile/Lapince-Logo-Mobile.webp"
         className="absolute top-6 left-6 w-28 z-[11] md:hidden"
@@ -230,6 +237,7 @@ export default function DashboardPage() {
         alt="Logo"
       />
 
+      {/* Contenu principal */}
       <div
         className="relative z-20 flex flex-col h-full overflow-y-auto scrollbar-hide"
         style={{ paddingBottom: footerHeight + 40 }}
@@ -276,16 +284,18 @@ export default function DashboardPage() {
           onClose={handleCloseAlert}
         />
       )}
+
+      {/* --- AJOUT : TransactionSheet utilise remove/update du hook useTransactions --- */}
       <TransactionSheet
         transactions={filteredTransactions}
         footerHeight={footerHeight}
-        onDeleteRequest={(id) => {
-          // --- Commentaire FR : demande de suppression ---
-          console.log("Suppression demandée pour l'ID :", id);
+        onDeleteRequest={async (id) => {
+          const ok = await remove(id);
+          if (ok) loadData();
         }}
-        onUpdateRequest={(t) => {
-          // --- Commentaire FR : demande de mise à jour ---
-          console.log("Mise à jour demandée pour :", t);
+        onUpdateRequest={async (t) => {
+          const updated = await update(t);
+          if (updated) loadData();
         }}
       />
 
