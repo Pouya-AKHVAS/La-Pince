@@ -2,9 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   fetchTransactions,
   type Transaction,
-} from "../../services/transactionApi";
-import { fetchOverview } from "../../services/statsApi";
-import type { Overview } from "../../types/stats";
+} from "../../services/transactionApi"; //Imports Transactions
 
 import Footer from "../../components/Footer/footer";
 import { AnimatedOrbBackground } from "../../components/AnimatedOrbBackground/AnimatedOrbBackground";
@@ -14,11 +12,13 @@ import BudgetCard from "../../components/CategoryCard/BudgetCard";
 import TransactionSheet from "../../components/TransactionList/TransactionSheet";
 import AlertPopup from "../../components/Alert/AlertPopup";
 import { useAlerts } from "../../hooks/useAlerts";
+import { fetchOverview } from "../../services/statsApi";
+import type { Overview } from "../../types/stats";
 
 export default function TransactionPage() {
   const { currentAlert, handleCloseAlert, loadAlerts } = useAlerts();
   const footerRef = useRef<HTMLElement>(null);
-const [footerHeight, setFooterHeight] = useState(0);
+  const [footerHeight, setFooterHeight] = useState(0);
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [overview, setOverview] = useState<Overview | null>(null);
@@ -45,7 +45,9 @@ const [footerHeight, setFooterHeight] = useState(0);
   }, [loadAlerts]);
 
   useEffect(() => {
-    load();
+    (async () => {
+      await load();
+    })();
   }, [load]);
 
   useEffect(() => {
@@ -60,7 +62,7 @@ const [footerHeight, setFooterHeight] = useState(0);
   const transactionsSorted = [...transactions].sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
   );
-  
+
   if (loading) {
     return (
       <main className="fixed inset-0 flex items-center justify-center bg-[#c8dce8]">
@@ -78,6 +80,51 @@ const [footerHeight, setFooterHeight] = useState(0);
       </main>
     );
   }
+  // --- AJOUT : suppression d’une transaction ---
+  async function handleDelete(id: number) {
+    try {
+      await fetch(`${import.meta.env.VITE_API_BASE_URL}/transactions/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      // Mise à jour locale
+      setTransactions((prev) => prev.filter((t) => t.id !== id));
+    } catch (error) {
+      console.error("Erreur suppression transaction :", error);
+    }
+  }
+
+  // --- AJOUT : mise à jour d’une transaction ---
+  async function handleUpdate(updated: Transaction) {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/transactions/${updated.id}`,
+        {
+          method: "PATCH",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updated),
+        },
+      );
+
+      const saved = await res.json();
+
+      // --- Correction : on conserve la catégorie existante si l’API ne la renvoie pas ---
+      setTransactions((prev) =>
+        prev.map((t) =>
+          t.id === saved.id
+            ? { ...t, ...saved } // ← fusion propre, évite category = undefined
+            : t,
+        ),
+      );
+      // --- AJOUT : recharge overview + budgets + alerts ---
+      await load();
+    } catch (error) {
+      console.error("Erreur mise à jour transaction :", error);
+    }
+  }
+
   return (
     <main className="fixed inset-0 w-full h-full overflow-hidden font-sans text-[#002b49]">
       <AnimatedOrbBackground />
@@ -108,9 +155,7 @@ const [footerHeight, setFooterHeight] = useState(0);
       />
 
       {/* Contenu */}
-      <div
-        className="relative z-20 flex flex-col h-full overflow-y-auto scrollbar-hide pb-40 [mask-image:linear-gradient(to_bottom,transparent_0px,transparent_145px,black_162px)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0px,transparent_145px,black_162px)] md:[mask-image:none] md:[-webkit-mask-image:none]"
-      >
+      <div className="relative z-20 flex flex-col h-full overflow-y-auto scrollbar-hide pb-40 [mask-image:linear-gradient(to_bottom,transparent_0px,transparent_145px,black_162px)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0px,transparent_145px,black_162px)] md:[mask-image:none] md:[-webkit-mask-image:none]">
         {/* En-tête Solde */}
         <header className="flex flex-col items-center pt-44 md:pt-10 pb-4 shrink-0">
           <h1 className="text-[35px] md:text-[50px] lg:text-[60px] font-black uppercase leading-none tracking-tighter">
@@ -177,6 +222,8 @@ const [footerHeight, setFooterHeight] = useState(0);
       <TransactionSheet
         transactions={transactionsSorted}
         footerHeight={footerHeight}
+        onDelete={handleDelete} // ← AJOUT
+        onUpdate={handleUpdate} // ← AJOUT
       />
       <footer
         ref={footerRef}

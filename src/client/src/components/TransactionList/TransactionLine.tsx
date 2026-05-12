@@ -11,7 +11,9 @@ import type { Transaction } from "../../types/transaction.js";
 
 function CategoryIcon({ name }: { name: string | null }) {
   if (!name) return null;
-  const Icon = (Icons as unknown as Record<string, React.FC<{ size?: number }>>)[name];
+  const Icon = (
+    Icons as unknown as Record<string, React.FC<{ size?: number }>>
+  )[name];
   if (!Icon) return null;
   return <Icon size={14} />;
 }
@@ -35,10 +37,18 @@ function formatAmount(amount: number, type: "EXPENSE" | "INCOME"): string {
 }
 
 // Props minimaliste: juste la transaction. Pas besoin de callbacks ici.
+// --- AJOUT : onEdit et onDelete pour permettre les actions sur chaque ligne ---
+type Props = {
+  transaction: Transaction;
+  onEdit: (t: Transaction) => void; // ← Nouveau : ouvre le formulaire d’édition
+  onDelete: (id: number) => void; // ← Nouveau : supprime la transaction
+};
 
-type Props = { transaction: Transaction };
-
-export default function TransactionLine({ transaction }: Props) {
+export default function TransactionLine({
+  transaction,
+  onEdit,
+  onDelete,
+}: Props) {
   // On calcule isRevenu une seule fois et on l'utilise pour les deux classes CSS.
   // On évite de répeter "transaction.amount >= 0" deux fois dans le jsx
 
@@ -77,6 +87,29 @@ export default function TransactionLine({ transaction }: Props) {
       >
         {formatAmount(transaction.amount, transaction.category.type)}
       </span>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* AJOUT : Boutons Modifier / Supprimer pour chaque transaction       */}
+      {/* Ces boutons n'altèrent pas le design existant, ils s'ajoutent à la */}
+      {/* fin de la ligne sans toucher aux éléments déjà présents.          */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="flex items-center gap-2 ml-2 shrink-0">
+        {/* Bouton Modifier */}
+        <button
+          onClick={() => onEdit(transaction)}
+          className="text-[10px] px-2 py-1 rounded bg-blue-500 text-white hover:bg-blue-600 transition"
+        >
+          Modifier
+        </button>
+
+        {/* Bouton Supprimer */}
+        <button
+          onClick={() => onDelete(transaction.id)}
+          className="text-[10px] px-2 py-1 rounded bg-red-500 text-white hover:bg-red-600 transition"
+        >
+          Supprimer
+        </button>
+      </div>
     </div>
   );
 }
