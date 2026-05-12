@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { type Transaction } from "../../../services/transactionApi";
 
 interface TransactionFiltersProps {
@@ -41,6 +41,24 @@ export function TransactionFilters({
     { value: "INCOME", label: "Revenus" },
     { value: "EXPENSE", label: "Dépenses" },
   ] as const;
+
+  // Ferme le menu si on clique en dehors
+  useEffect(() => { 
+    if (!isMenuOpen) return;
+    const hanfleClickOutside = () => {
+      setIsMenuOpen(false);
+    }
+
+    // On utilise un timeout pour éviter de fermer immédiatement après l'ouverture
+    const timer = setTimeout(() => {
+      document.addEventListener("click", hanfleClickOutside);
+    }, 0);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("click", hanfleClickOutside);
+    }
+  }, [isMenuOpen]);
 
   return (
     <div className="p-4 md:p-6 border-b border-white/20 bg-white/10 space-y-4">
@@ -96,7 +114,10 @@ export function TransactionFilters({
             </button>
 
             {isMenuOpen && (
-              <div className="absolute top-full mt-2 right-0 w-64 bg-white border border-gray-200 shadow-2xl rounded-2xl p-2 z-[999] pointer-events-auto"
+              
+              <div 
+                onClick={(e) => e.stopPropagation()} // Empêche le clic de remonter jusqu'à window
+                className="absolute top-full mt-2 right-0 w-64 bg-white border border-gray-200 shadow-2xl rounded-2xl p-2 z-[999] pointer-events-auto"
                 style={{ 
                   position: 'absolute',
                   left: 'auto',
