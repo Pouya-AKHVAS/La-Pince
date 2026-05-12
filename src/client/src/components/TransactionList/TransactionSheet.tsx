@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { ChevronUp, Search } from "lucide-react";
+import { ChevronUp } from "lucide-react";
 import type { Transaction } from "../../types/transaction.js";
 import TransactionLine from "./TransactionLine.js";
 
@@ -21,8 +21,6 @@ export default function TransactionSheet({ transactions, footerHeight }: Props) 
     // Gère l'ouverture du panneau (vrai = ouvert, faux = réduit)
     const [ isOpen, setIsOpen ] = useState(false);
     
-    // Valeur tapée dans la barre de recherche
-    const [ searchTerm, setSearchTerm ] = useState("");
     
 
     // useRef : On utilise des refs pour le drag-and-drop car changer un state 
@@ -98,31 +96,6 @@ export default function TransactionSheet({ transactions, footerHeight }: Props) 
                         Toutes mes transactions
                     </p>
 
-                    {/* BARRE DE RECHERCHE 
-                        stopPropagation : Crucial ! Empêche le clic dans l'input d'être 
-                        interprété comme un début de drag par le parent. */}
-                    <div 
-                        className="relative flex items-center bg-white/10 rounded-full px-3 py-1 border border-white/20 focus-within:bg-white/20 transition-all max-w-[120px] ml-2"
-                        onMouseDown={(e) => e.stopPropagation()}
-                        onTouchStart={(e) => e.stopPropagation()}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <Search size={12} className="text-white/50 mr-2" />
-                        <input
-                            type="text"
-                            placeholder="Filtrer..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="bg-transparent border-none outline-none text-[10px] font-bold uppercase tracking-wider placeholder:text-white/30 w-full"
-                        />
-                    </div>
-
-                    
-
-                    
-                                    
-                                
-                                
 
                     <ChevronUp
                         size={14}
