@@ -49,7 +49,7 @@ export function TransactionFilters({
   ] as const;
 
   return (
-    <div className="p-6 border-b border-white/20 bg-white/10 space-y-4">
+    <div className="p-4 border-b border-white/20 bg-white/10 space-y-4">
       <div className="flex flex-col md:flex-row justify-between items-center gap-4">
         <h3 className="text-xl font-black italic uppercase">Détails des opérations</h3>
 
