@@ -15,7 +15,6 @@ import { StatsCards } from "./components/StatsCards";
 import { MonthlyChart } from "./components/MonthlyChart";
 import { TransactionFilters } from "./components/TransactionFilters";
 import { TransactionTable } from "./components/TransactionTable";
-import TransactionSheet from "../../components/TransactionList/TransactionSheet";
 
 export default function DashboardPage() {
   const { currentAlert, handleCloseAlert, loadAlerts } = useAlerts();
@@ -59,51 +58,8 @@ export default function DashboardPage() {
     }
   }, [loadAlerts]);
 
-  // --- AJOUT : suppression d’une transaction ---
-  async function handleDelete(id: number) {
-    try {
-      await fetch(`${import.meta.env.VITE_API_BASE_URL}/transactions/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-
-      setTransactions((prev) => prev.filter((t) => t.id !== id));
-    } catch (error) {
-      console.error("Erreur suppression transaction :", error);
-    }
-  }
-
-  // --- AJOUT : mise à jour d’une transaction ---
-  async function handleUpdate(updated: Transaction) {
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/transactions/${updated.id}`,
-        {
-          method: "PATCH",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updated),
-        },
-      );
-
-      const saved = await res.json();
-
-      // --- Correction : conserver la catégorie si l’API ne la renvoie pas ---
-      setTransactions((prev) =>
-        prev.map((t) => (t.id === saved.id ? { ...t, ...saved } : t)),
-      );
-      // --- AJOUT : recharge les stats ---
-      await loadData();
-    } catch (error) {
-      console.error("Erreur mise à jour transaction :", error);
-    }
-  }
-
   useEffect(() => {
-    (async () => {
-      await loadData();
-    })();
-
+    loadData();
     window.addEventListener("transaction:created", loadData);
     return () => window.removeEventListener("transaction:created", loadData);
   }, [loadData]);
@@ -148,10 +104,6 @@ export default function DashboardPage() {
       </main>
     );
   }
-
-  const transactionsSorted = [...transactions].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-  );
 
   return (
     <main className="fixed inset-0 w-full h-full overflow-hidden font-sans text-[#002b49]">
@@ -223,14 +175,6 @@ export default function DashboardPage() {
         />
       )}
 
-      <TransactionSheet
-        transactions={transactionsSorted}
-        footerHeight={footerHeight}
-        onDelete={handleDelete} // ← AJOUT
-        onUpdate={handleUpdate} // ← AJOUT
-      />
-
-      {/* Footer fixe en bas */}
       <footer
         ref={footerRef}
         className="absolute bottom-0 left-0 w-full z-[60]"

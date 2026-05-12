@@ -11,16 +11,15 @@ const HANDLE_HEIGHT = 56;
 type Props = {
   transactions: Transaction[];
   footerHeight: number;
-  // --- AJOUT : callbacks fournis par le parent ---
-  onDelete: (id: number) => void;
-  onUpdate: (t: Transaction) => void;
+  onDeleteRequest: (id: number) => void;
+  onUpdateRequest: (t: Transaction) => void;
 };
 
 export default function TransactionSheet({
   transactions,
   footerHeight,
-  onDelete,
-  onUpdate,
+  onDeleteRequest,
+  onUpdateRequest,
 }: Props) {
   const COLLAPSED_HEIGHT = footerHeight + HANDLE_HEIGHT;
 
@@ -41,10 +40,6 @@ export default function TransactionSheet({
 
   // Gère l'affichage du petit menu déroulant des catégories
   const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
-
-  // --- AJOUT : transaction en cours d’édition ---
-  const [editingTransaction, setEditingTransaction] =
-    useState<Transaction | null>(null);
 
   // useRef : On utilise des refs pour le drag-and-drop car changer un state
   // à chaque pixel déplacé ferait ramer l'application (trop de re-renders).
@@ -156,23 +151,6 @@ export default function TransactionSheet({
     isDragging.current = false;
   }
 
-  // --- AJOUT : ouverture du modal d’édition ---
-  function handleEdit(t: Transaction) {
-    setEditingTransaction(t);
-  }
-
-  // --- AJOUT : suppression (appel parent) ---
-  async function handleDelete(id: number) {
-    onDelete(id);
-  }
-
-  // --- AJOUT : sauvegarde (appel parent) ---
-  async function handleUpdateTransaction() {
-    if (!editingTransaction) return;
-    onUpdate(editingTransaction);
-    setEditingTransaction(null);
-  }
-
   return (
     <div
       style={{
@@ -203,15 +181,18 @@ export default function TransactionSheet({
           {/* Flèche qui tourne selon l'état */}
           <ChevronUp
             size={14}
-            className={`text-white/70 transition-transform duration-300 group-hover:text-white ${isOpen ? "rotate-180" : ""}`}
+            className={`text-white/70 transition-transform duration-300 group-hover:text-white ${
+              isOpen ? "rotate-180" : ""
+            }`}
           />
+
           <p className="text-xs font-bold uppercase tracking-widest text-white/70 group-hover:text-white transition-colors whitespace-nowrap">
             Transactions
           </p>
 
           {/* BARRE DE RECHERCHE 
-                        stopPropagation : Crucial ! Empêche le clic dans l'input d'être 
-                        interprété comme un début de drag par le parent. */}
+            stopPropagation : Crucial ! Empêche le clic dans l'input d'être 
+            interprété comme un début de drag par le parent. */}
           <div
             className="relative flex items-center bg-white/10 rounded-full px-3 py-1 border border-white/20 focus-within:bg-white/20 transition-all max-w-[120px] ml-2"
             onMouseDown={(e) => e.stopPropagation()}
@@ -257,7 +238,11 @@ export default function TransactionSheet({
               }}
               onMouseDown={(e) => e.stopPropagation()}
               // Change de couleur si des filtres sont actifs
-              className={`bg-white/10 border border-white/20 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider outline-none hover:bg-white/20 transition-all cursor-pointer ml-1 whitespace-nowrap ${selectedCategories.length > 0 ? "border-[#74BAC2] text-[#74BAC2]" : ""}`}
+              className={`bg-white/10 border border-white/20 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider outline-none hover:bg-white/20 transition-all cursor-pointer ml-1 whitespace-nowrap ${
+                selectedCategories.length > 0
+                  ? "border-[#74BAC2] text-[#74BAC2]"
+                  : ""
+              }`}
             >
               Catégories{" "}
               {selectedCategories.length > 0
@@ -285,6 +270,7 @@ export default function TransactionSheet({
                     </button>
                   )}
                 </div>
+
                 <div className="max-h-48 overflow-y-auto p-1 scrollbar-hide">
                   {availableCategories.length === 0 ? (
                     <p className="text-[10px] text-center py-4 opacity-40 italic">
@@ -315,7 +301,9 @@ export default function TransactionSheet({
 
           <ChevronUp
             size={14}
-            className={`text-white/70 transition-transform duration-300 group-hover:text-white ${isOpen ? "rotate-180" : ""}`}
+            className={`text-white/70 transition-transform duration-300 group-hover:text-white ${
+              isOpen ? "rotate-180" : ""
+            }`}
           />
         </div>
       </div>
@@ -333,72 +321,12 @@ export default function TransactionSheet({
             <TransactionLine
               key={t.id}
               transaction={t}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
+              onUpdateRequest={onUpdateRequest}
+              onDeleteRequest={onDeleteRequest}
             />
           ))
         )}
       </div>
-
-      {/* --- AJOUT : MODAL D’ÉDITION DE TRANSACTION --- */}
-      {editingTransaction && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[999]">
-          <div className="bg-white text-[#002b49] p-6 rounded-2xl w-[90%] max-w-[350px] shadow-xl">
-            <h2 className="text-lg font-bold mb-4">Modifier la transaction</h2>
-
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleUpdateTransaction();
-              }}
-              className="space-y-3"
-            >
-              {/* Champ Description */}
-              <input
-                type="text"
-                defaultValue={editingTransaction.description ?? ""}
-                onChange={(e) =>
-                  setEditingTransaction((prev) =>
-                    prev ? { ...prev, description: e.target.value } : prev,
-                  )
-                }
-                className="w-full px-3 py-2 rounded bg-gray-100"
-                placeholder="Description"
-              />
-
-              {/* Champ Montant */}
-              <input
-                type="number"
-                defaultValue={editingTransaction.amount}
-                onChange={(e) =>
-                  setEditingTransaction((prev) =>
-                    prev ? { ...prev, amount: Number(e.target.value) } : prev,
-                  )
-                }
-                className="w-full px-3 py-2 rounded bg-gray-100"
-                placeholder="Montant"
-              />
-
-              {/* Bouton Enregistrer */}
-              <button
-                type="submit"
-                className="w-full bg-[#002b49] text-white py-2 rounded font-bold"
-              >
-                Enregistrer
-              </button>
-
-              {/* Bouton Annuler */}
-              <button
-                type="button"
-                onClick={() => setEditingTransaction(null)}
-                className="w-full bg-gray-300 text-[#002b49] py-2 rounded font-bold mt-2"
-              >
-                Annuler
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

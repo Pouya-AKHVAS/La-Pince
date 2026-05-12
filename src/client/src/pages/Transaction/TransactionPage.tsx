@@ -25,6 +25,14 @@ export default function TransactionPage() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  type ConfirmData =
+    | { action: "delete"; payload: number }
+    | { action: "update"; payload: Transaction }
+    | null;
+
+  const [confirmData, setConfirmData] = useState<ConfirmData>(null);
+  const [editingTransaction, setEditingTransaction] =
+    useState<Transaction | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -90,6 +98,8 @@ export default function TransactionPage() {
 
       // Mise à jour locale
       setTransactions((prev) => prev.filter((t) => t.id !== id));
+      await load();
+      await loadAlerts();
     } catch (error) {
       console.error("Erreur suppression transaction :", error);
     }
@@ -119,7 +129,9 @@ export default function TransactionPage() {
         ),
       );
       // --- AJOUT : recharge overview + budgets + alerts ---
+
       await load();
+      await loadAlerts();
     } catch (error) {
       console.error("Erreur mise à jour transaction :", error);
     }
@@ -219,12 +231,120 @@ export default function TransactionPage() {
           onClose={handleCloseAlert}
         />
       )}
+
       <TransactionSheet
         transactions={transactionsSorted}
         footerHeight={footerHeight}
-        onDelete={handleDelete} // ← AJOUT
-        onUpdate={handleUpdate} // ← AJOUT
+        onDeleteRequest={(id) =>
+          setConfirmData({ action: "delete", payload: id })
+        }
+        onUpdateRequest={(t) => setEditingTransaction(t)}
       />
+
+      {confirmData && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[999]">
+          <div className="bg-white rounded-xl p-6 w-80 text-center shadow-xl">
+            <p className="font-bold text-lg mb-4">Êtes-vous sûr ?</p>
+
+            <p className="text-sm opacity-70 mb-6">
+              {confirmData.action === "delete"
+                ? "Voulez-vous vraiment supprimer cette transaction ?"
+                : "Voulez-vous enregistrer les modifications ?"}
+            </p>
+
+            <div className="flex justify-between gap-3">
+              <button
+                className="flex-1 py-2 rounded-lg bg-gray-300 font-bold"
+                onClick={() => setConfirmData(null)}
+              >
+                Annuler
+              </button>
+
+              <button
+                className="flex-1 py-2 rounded-lg bg-red-600 text-white font-bold"
+                onClick={async () => {
+                  if (confirmData.action === "delete") {
+                    await handleDelete(confirmData.payload);
+                  } else if (confirmData.action === "update") {
+                    await handleUpdate(confirmData.payload);
+                  }
+                  setConfirmData(null);
+                }}
+              >
+                Confirmer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {editingTransaction && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[999]">
+          <div className="bg-white text-[#002b49] p-6 rounded-2xl w-[90%] max-w-[350px] shadow-xl">
+            <h2 className="text-lg font-bold mb-4">Modifier la transaction</h2>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleUpdate(editingTransaction);
+                setEditingTransaction(null);
+              }}
+              className="space-y-3"
+            >
+              {/* Champ Description */}
+              <input
+                type="text"
+                defaultValue={editingTransaction.description ?? ""}
+                onChange={(e) =>
+                  setEditingTransaction((prev) =>
+                    prev ? { ...prev, description: e.target.value } : prev,
+                  )
+                }
+                className="w-full px-3 py-2 rounded bg-gray-100"
+                placeholder="Description"
+              />
+
+              {/* Champ Montant */}
+              <input
+                type="number"
+                defaultValue={editingTransaction.amount}
+                onChange={(e) =>
+                  setEditingTransaction((prev) =>
+                    prev ? { ...prev, amount: Number(e.target.value) } : prev,
+                  )
+                }
+                className="w-full px-3 py-2 rounded bg-gray-100"
+                placeholder="Montant"
+              />
+
+              {/* Bouton Enregistrer */}
+              <button
+                type="button"
+                onClick={() => {
+                  setConfirmData({
+                    action: "update",
+                    payload: editingTransaction,
+                  });
+                  setEditingTransaction(null);
+                }}
+                className="w-full bg-[#002b49] text-white py-2 rounded font-bold"
+              >
+                Enregistrer
+              </button>
+
+              {/* Bouton Annuler */}
+              <button
+                type="button"
+                onClick={() => setEditingTransaction(null)}
+                className="w-full bg-gray-300 text-[#002b49] py-2 rounded font-bold mt-2"
+              >
+                Annuler
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
       <footer
         ref={footerRef}
         className="absolute bottom-0 left-0 w-full z-[60]"
