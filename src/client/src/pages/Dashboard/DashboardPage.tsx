@@ -14,8 +14,7 @@ import { StatsCards } from "./components/StatsCards";
 import { MonthlyChart } from "./components/MonthlyChart";
 import { TransactionFilters } from "./components/TransactionFilters";
 import { TransactionTable } from "./components/TransactionTable";
-import TransactionSheet from "../../components/TransactionList/TransactionSheet";
-import { useTransactions } from "../../hooks/useTransactions";
+
 import { useStats } from "../../hooks/useStats";
 import type { MonthlyEntry } from "../../types/stats";
 
@@ -156,8 +155,6 @@ export default function DashboardPage() {
     );
   };
 
-  const { remove, update } = useTransactions();
-
   // --- AJOUT : loadData utilise désormais loadStats (hook) au lieu de fetch direct ---
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -284,20 +281,6 @@ export default function DashboardPage() {
           onClose={handleCloseAlert}
         />
       )}
-
-      {/* --- AJOUT : TransactionSheet utilise remove/update du hook useTransactions --- */}
-      <TransactionSheet
-        transactions={filteredTransactions}
-        footerHeight={footerHeight}
-        onDeleteRequest={async (id) => {
-          const ok = await remove(id);
-          if (ok) loadData();
-        }}
-        onUpdateRequest={async (t) => {
-          const updated = await update(t);
-          if (updated) loadData();
-        }}
-      />
 
       <footer
         ref={footerRef}
