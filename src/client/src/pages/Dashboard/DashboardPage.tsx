@@ -4,7 +4,9 @@ import {
   type Transaction,
 } from "../../services/transactionApi";
 import { fetchOverview, fetchMonthlyStats } from "../../services/statsApi";
+import { fetchBudgets } from "../../services/budgetApi";
 import type { Overview, MonthlyEntry } from "../../types/stats";
+import type { Budget } from "../../types/budget";
 import { useAlerts } from "../../hooks/useAlerts";
 
 import Footer from "../../components/Footer/footer";
@@ -15,7 +17,7 @@ import { StatsCards } from "./components/StatsCards";
 import { MonthlyChart } from "./components/MonthlyChart";
 import { TransactionFilters } from "./components/TransactionFilters";
 import { TransactionTable } from "./components/TransactionTable";
-import TransactionSheet from "../../components/TransactionList/TransactionSheet";
+import BudgetHistory from "../../components/Budget/BudgetHistory";
 
 export default function DashboardPage() {
   const { currentAlert, handleCloseAlert, loadAlerts } = useAlerts();
@@ -26,6 +28,7 @@ export default function DashboardPage() {
   const [overview, setOverview] = useState<Overview | null>(null);
   const [monthly, setMonthly] = useState<MonthlyEntry[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [budgets, setBudgets] = useState<Budget[]>([]);
 
   // --- États des filtres ---
   const [search, setSearch] = useState("");
@@ -98,15 +101,17 @@ export default function DashboardPage() {
     setLoading(true);
     setError(null);
     try {
-      const [trans, ov, mo] = await Promise.all([
+      const [trans, ov, mo, budg] = await Promise.all([
         fetchTransactions(),
         fetchOverview(),
         fetchMonthlyStats(),
+        fetchBudgets(),
         loadAlerts(),
       ]);
       setTransactions(trans.data);
       setOverview(ov);
       setMonthly(mo);
+      setBudgets(budg);
     } catch {
       setError("Impossible de charger les données.");
     } finally {
@@ -150,6 +155,9 @@ export default function DashboardPage() {
         <div className="max-w-6xl mx-auto w-full px-6 space-y-8">
           {displayOverview && <StatsCards stats={displayOverview} />}
           {displayMonthlyData.length > 0 && <MonthlyChart data={displayMonthlyData} />}
+
+          {/* Aligné sur MonthlyChart : on n'affiche l'historique que s'il y a des budgets. */}
+          {budgets.length > 0 && <BudgetHistory budgets={budgets} />}
 
           <section className="bg-white/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/40 mb-10">
             <TransactionFilters
