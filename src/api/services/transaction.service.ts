@@ -8,13 +8,19 @@ import { prisma } from "../lib/prisma.js";
 // --- 1. Récupérer toutes les transactions avec les filtres ---
 export const getAllTransactions = async (
   userId: number,
-  filters: { idcategory?: number | undefined; startDate?: string | undefined; endDate?: string | undefined; page: number; limit: number },
+  filters: {
+    idcategory?: number | undefined;
+    startDate?: string | undefined;
+    endDate?: string | undefined;
+    page: number;
+    limit: number;
+  },
 ) => {
   const where = {
     userId,
     ...(filters.idcategory && { categoryId: filters.idcategory }),
-    ...(filters.startDate  && { date: { gte: new Date(filters.startDate) } }),
-    ...(filters.endDate    && { date: { lte: new Date(filters.endDate)   } }),
+    ...(filters.startDate && { date: { gte: new Date(filters.startDate) } }),
+    ...(filters.endDate && { date: { lte: new Date(filters.endDate) } }),
   };
   const skip = (filters.page - 1) * filters.limit;
 
@@ -32,7 +38,7 @@ export const getAllTransactions = async (
   return {
     data,
     total,
-    page:       filters.page,
+    page: filters.page,
     totalPages: Math.ceil(total / filters.limit),
   };
 };
@@ -74,7 +80,11 @@ export const getTransactionById = async (id: number, userId: number) => {
 };
 
 // --- 4. Mettre à jour une transaction ---
-export const updateTransaction = async (id: number, userId: number, data: any) => {
+export const updateTransaction = async (
+  id: number,
+  userId: number,
+  data: any,
+) => {
   // On passe la date en objet Date si elle a été modifiée
   const updateData: any = { ...data };
   if (data.date) updateData.date = new Date(data.date);
@@ -88,6 +98,7 @@ export const updateTransaction = async (id: number, userId: number, data: any) =
   return prisma.transaction.update({
     where: { id }, // On identifie la transaction à mettre à jour par son ID
     data: updateData,
+    include: { category: true },
   });
 };
 
