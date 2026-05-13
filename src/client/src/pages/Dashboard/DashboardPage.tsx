@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, useMemo } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import {
   fetchTransactions,
   type Transaction,
@@ -21,9 +21,6 @@ import BudgetHistory from "../../components/Budget/BudgetHistory";
 
 export default function DashboardPage() {
   const { currentAlert, handleCloseAlert, loadAlerts } = useAlerts();
-  const footerRef = useRef<HTMLElement>(null);
-  const [footerHeight, setFooterHeight] = useState(0);
-
   // --- Données venant de l'API ---
   const [overview, setOverview] = useState<Overview | null>(null);
   const [monthly, setMonthly] = useState<MonthlyEntry[]>([]);
@@ -125,14 +122,6 @@ export default function DashboardPage() {
     return () => window.removeEventListener("transaction:created", loadData);
   }, [loadData]);
 
-  useEffect(() => {
-    if (!footerRef.current) return;
-    const observer = new ResizeObserver(() => {
-      if (footerRef.current) setFooterHeight(footerRef.current.offsetHeight);
-    });
-    observer.observe(footerRef.current);
-    return () => observer.disconnect();
-  }, []);
 
   if (loading) return <main className="fixed inset-0 flex items-center justify-center bg-[#cbd5e1]"><p className="text-[#002b49] font-black text-xl animate-pulse">Chargement…</p></main>;
   if (error) return <main className="fixed inset-0 flex items-center justify-center bg-[#cbd5e1]"><p className="text-red-600 font-bold text-lg">{error}</p></main>;
@@ -146,7 +135,7 @@ export default function DashboardPage() {
       <img src="/WEBP/Mobile/Lapince-Logo-Mobile.webp" className="absolute top-6 left-6 w-28 z-[11] md:hidden" alt="Logo" />
       <img src="/WEBP/Desktop/Lapince-Logo-Desktop.webp" className="absolute top-10 left-15 w-24 lg:w-60 z-[11] transition-all hidden md:block" alt="Logo" />
 
-      <div className="relative z-20 flex flex-col h-full overflow-y-auto scrollbar-hide" style={{ paddingBottom: footerHeight + 40 }}>
+      <div className="relative z-20 flex flex-col h-full overflow-y-auto scrollbar-hide" style={{ paddingBottom: 40 }}>
         <header className="flex flex-col items-center pt-40 md:pt-10 pb-8 shrink-0">
           <h1 className="text-[35px] md:text-[50px] lg:text-[60px] font-black uppercase leading-none tracking-tighter">Tableau de bord</h1>
           <p className="text-base font-bold mt-1 opacity-80">Analyse de vos flux financiers</p>
@@ -174,9 +163,8 @@ export default function DashboardPage() {
       </div>
 
       {currentAlert && <AlertPopup key={currentAlert.id} alert={currentAlert} onClose={handleCloseAlert} />}
-      <TransactionSheet transactions={filteredTransactions} footerHeight={footerHeight} />
 
-      <footer ref={footerRef} className="absolute bottom-0 left-0 w-full z-[60]">
+      <footer className="absolute bottom-0 left-0 w-full z-[60]">
         <Footer showIcons activeIds={["transactions", "params"]} />
       </footer>
     </main>
