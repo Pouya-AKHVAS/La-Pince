@@ -3,9 +3,7 @@ import {
   fetchTransactions,
   type Transaction,
 } from "../../services/transactionApi";
-import { fetchOverview, fetchMonthlyStats } from "../../services/statsApi";
 import { fetchBudgets } from "../../services/budgetApi";
-import type { Overview, MonthlyEntry } from "../../types/stats";
 import type { Budget } from "../../types/budget";
 import { useAlerts } from "../../hooks/useAlerts";
 
@@ -18,21 +16,27 @@ import { MonthlyChart } from "./components/MonthlyChart";
 import { TransactionFilters } from "./components/TransactionFilters";
 import { TransactionTable } from "./components/TransactionTable";
 import BudgetHistory from "../../components/Budget/BudgetHistory";
+import { useStats } from "../../hooks/useStats";
+import type { MonthlyEntry } from "../../types/stats";
 
 export default function DashboardPage() {
-  const { currentAlert, handleCloseAlert, loadAlerts } = useAlerts();
+  const { currentAlert, handleCloseAlert } = useAlerts();
   const footerRef = useRef<HTMLElement>(null);
   const [footerHeight, setFooterHeight] = useState(0);
 
+  // --- AJOUT : les statistiques globales viennent désormais du hook useStats ---
+  const { overview, monthly, loadStats } = useStats();
+
   // --- Données venant de l'API ---
-  const [overview, setOverview] = useState<Overview | null>(null);
-  const [monthly, setMonthly] = useState<MonthlyEntry[]>([]);
+  // --- AJOUT : seules les transactions restent gérées localement ici ---
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
 
   // --- États des filtres ---
   const [search, setSearch] = useState("");
-  const [filterType, setFilterType] = useState<"ALL" | "INCOME" | "EXPENSE">("ALL");
+  const [filterType, setFilterType] = useState<"ALL" | "INCOME" | "EXPENSE">(
+    "ALL",
+  );
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
@@ -44,36 +48,64 @@ export default function DashboardPage() {
   // --- 1. Logique de filtrage des transactions ---
   const filteredTransactions = useMemo(() => {
     return transactions.filter((t) => {
-      const matchesType = filterType === "ALL" || t.category.type === filterType;
-      const matchesSearch = !search.trim() || 
+      const matchesType =
+        filterType === "ALL" || t.category.type === filterType;
+      const matchesSearch =
+        !search.trim() ||
         t.description?.toLowerCase().includes(search.toLowerCase()) ||
         t.category.name.toLowerCase().includes(search.toLowerCase());
       const transactionDate = new Date(t.date).getTime();
-      const matchesStart = !startDate || transactionDate >= new Date(startDate).getTime();
-      const matchesEnd = !endDate || transactionDate <= new Date(endDate).getTime();
-      const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(t.category.id);
-      
-      return matchesType && matchesSearch && matchesStart && matchesEnd && matchesCategory;
+      const matchesStart =
+        !startDate || transactionDate >= new Date(startDate).getTime();
+      const matchesEnd =
+        !endDate || transactionDate <= new Date(endDate).getTime();
+      const matchesCategory =
+        selectedCategories.length === 0 ||
+        selectedCategories.includes(t.category.id);
+      return (
+        matchesType &&
+        matchesSearch &&
+        matchesStart &&
+        matchesEnd &&
+        matchesCategory
+      );
     });
-  }, [transactions, search, filterType, startDate, endDate, selectedCategories]);
+  }, [
+    transactions,
+    search,
+    filterType,
+    startDate,
+    endDate,
+    selectedCategories,
+  ]);
 
   // --- 2. Calcul du Graphique (C'est ici qu'on répare les barres) ---
   const displayMonthlyData = useMemo(() => {
     // Si aucun filtre n'est activé, on utilise les données parfaites de l'API (monthly)
-    if (!search && filterType === "ALL" && !startDate && !endDate && selectedCategories.length === 0) {
+    if (
+      !search &&
+      filterType === "ALL" &&
+      !startDate &&
+      !endDate &&
+      selectedCategories.length === 0
+    ) {
       return monthly;
     }
 
     // Sinon, on recalcule les barres à la volée selon les filtres
     const monthlyMap: Record<string, MonthlyEntry> = {};
-    
+
     // On trie pour avoir les mois dans l'ordre
-    const sorted = [...filteredTransactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    const sorted = [...filteredTransactions].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+    );
 
     sorted.forEach((t) => {
-      const monthName = new Date(t.date).toLocaleString("fr-FR", { month: "short" });
+      const monthName = new Date(t.date).toLocaleString("fr-FR", {
+        month: "short",
+      });
       if (!monthlyMap[monthName]) {
-        monthlyMap[monthName] = { name: monthName, income: 0, expenses: 0 };
+        monthlyMap[monthName] = { month: monthName, income: 0, expenses: 0 };
       }
       const amount = Math.abs(Number(t.amount || 0));
       if (t.category.type === "INCOME") monthlyMap[monthName].income += amount;
@@ -81,46 +113,71 @@ export default function DashboardPage() {
     });
 
     return Object.values(monthlyMap);
-  }, [filteredTransactions, monthly, search, filterType, startDate, endDate, selectedCategories]);
+  }, [
+    filteredTransactions,
+    monthly,
+    search,
+    filterType,
+    startDate,
+    endDate,
+    selectedCategories,
+  ]);
 
   // --- 3. Calcul des Stats (Overview) ---
   const displayOverview = useMemo(() => {
-    if (!search && filterType === "ALL" && !startDate && !endDate && selectedCategories.length === 0) {
+    if (
+      !search &&
+      filterType === "ALL" &&
+      !startDate &&
+      !endDate &&
+      selectedCategories.length === 0
+    ) {
       return overview;
     }
-    const income = filteredTransactions.filter(t => t.category.type === "INCOME").reduce((acc, t) => acc + Number(t.amount || 0), 0);
-    const expenses = filteredTransactions.filter(t => t.category.type === "EXPENSE").reduce((acc, t) => acc + Number(t.amount || 0), 0);
+    const income = filteredTransactions
+      .filter((t) => t.category.type === "INCOME")
+      .reduce((acc, t) => acc + Number(t.amount || 0), 0);
+    const expenses = filteredTransactions
+      .filter((t) => t.category.type === "EXPENSE")
+      .reduce((acc, t) => acc + Number(t.amount || 0), 0);
     return { income, expenses, balance: income - expenses };
-  }, [filteredTransactions, overview, search, filterType, startDate, endDate, selectedCategories]);
+  }, [
+    filteredTransactions,
+    overview,
+    search,
+    filterType,
+    startDate,
+    endDate,
+    selectedCategories,
+  ]);
 
   const toggleCategory = (id: number) => {
-    setSelectedCategories(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]);
+    setSelectedCategories((prev) =>
+      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id],
+    );
   };
 
+  // --- AJOUT : loadData utilise désormais loadStats (hook) au lieu de fetch direct ---
   const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
+
     try {
-      const [trans, ov, mo, budg] = await Promise.all([
-        fetchTransactions(),
-        fetchOverview(),
-        fetchMonthlyStats(),
-        fetchBudgets(),
-        loadAlerts(),
-      ]);
+      const [trans, budg] = await Promise.all([fetchTransactions(), fetchBudgets()]);
       setTransactions(trans.data);
-      setOverview(ov);
-      setMonthly(mo);
       setBudgets(budg);
+      await loadStats();
     } catch {
       setError("Impossible de charger les données.");
     } finally {
       setLoading(false);
     }
-  }, [loadAlerts]);
+  }, [loadStats]);
 
   useEffect(() => {
-    loadData();
+    (async () => {
+      await loadData();
+    })();
     window.addEventListener("transaction:created", loadData);
     return () => window.removeEventListener("transaction:created", loadData);
   }, [loadData]);
@@ -134,49 +191,106 @@ export default function DashboardPage() {
     return () => observer.disconnect();
   }, []);
 
-  if (loading) return <main className="fixed inset-0 flex items-center justify-center bg-[#cbd5e1]"><p className="text-[#002b49] font-black text-xl animate-pulse">Chargement…</p></main>;
-  if (error) return <main className="fixed inset-0 flex items-center justify-center bg-[#cbd5e1]"><p className="text-red-600 font-bold text-lg">{error}</p></main>;
+  if (loading)
+    return (
+      <main className="fixed inset-0 flex items-center justify-center bg-[#cbd5e1]">
+        <p className="text-[#002b49] font-black text-xl animate-pulse">
+          Chargement…
+        </p>
+      </main>
+    );
+  if (error)
+    return (
+      <main className="fixed inset-0 flex items-center justify-center bg-[#cbd5e1]">
+        <p className="text-red-600 font-bold text-lg">{error}</p>
+      </main>
+    );
 
   return (
     <main className="fixed inset-0 w-full h-full overflow-hidden font-sans text-[#002b49]">
       <AnimatedOrbBackground />
-      <img src="/WEBP/Desktop/Lapince-Hero-Background-Desktop.webp" className="absolute bottom-0 left-0 w-[60vw] opacity-20 object-contain origin-bottom-left z-0 pointer-events-none select-none" aria-hidden="true" alt="" />
-      <div className="absolute inset-0 bg-white/30 z-10 pointer-events-none" aria-hidden="true" />
 
-      <img src="/WEBP/Mobile/Lapince-Logo-Mobile.webp" className="absolute top-6 left-6 w-28 z-[11] md:hidden" alt="Logo" />
-      <img src="/WEBP/Desktop/Lapince-Logo-Desktop.webp" className="absolute top-10 left-15 w-24 lg:w-60 z-[11] transition-all hidden md:block" alt="Logo" />
+      {/* Arrière-plan */}
+      <img
+        src="/WEBP/Desktop/Lapince-Hero-Background-Desktop.webp"
+        className="absolute bottom-0 left-0 w-[60vw] opacity-20 object-contain origin-bottom-left z-0 pointer-events-none select-none"
+        aria-hidden="true"
+        alt=""
+      />
 
-      <div className="relative z-20 flex flex-col h-full overflow-y-auto scrollbar-hide" style={{ paddingBottom: footerHeight + 40 }}>
+      {/* Overlay */}
+      <div
+        className="absolute inset-0 bg-white/30 z-10 pointer-events-none"
+        aria-hidden="true"
+      />
+
+      {/* Logos */}
+      <img
+        src="/WEBP/Mobile/Lapince-Logo-Mobile.webp"
+        className="absolute top-6 left-6 w-28 z-[11] md:hidden"
+        alt="Logo"
+      />
+      <img
+        src="/WEBP/Desktop/Lapince-Logo-Desktop.webp"
+        className="absolute top-10 left-15 w-24 lg:w-60 z-[11] transition-all hidden md:block"
+        alt="Logo"
+      />
+
+      {/* Contenu principal */}
+      <div
+        className="relative z-20 flex flex-col h-full overflow-y-auto scrollbar-hide"
+        style={{ paddingBottom: footerHeight + 40 }}
+      >
         <header className="flex flex-col items-center pt-40 md:pt-10 pb-8 shrink-0">
-          <h1 className="text-[35px] md:text-[50px] lg:text-[60px] font-black uppercase leading-none tracking-tighter">Tableau de bord</h1>
-          <p className="text-base font-bold mt-1 opacity-80">Analyse de vos flux financiers</p>
+          <h1 className="text-[35px] md:text-[50px] lg:text-[60px] font-black uppercase leading-none tracking-tighter">
+            Tableau de bord
+          </h1>
+          <p className="text-base font-bold mt-1 opacity-80">
+            Analyse de vos flux financiers
+          </p>
         </header>
 
         <div className="max-w-6xl mx-auto w-full px-6 space-y-8">
           {displayOverview && <StatsCards stats={displayOverview} />}
-          {displayMonthlyData.length > 0 && <MonthlyChart data={displayMonthlyData} />}
+          {displayMonthlyData.length > 0 && (
+            <MonthlyChart data={displayMonthlyData} />
+          )}
 
           {/* Aligné sur MonthlyChart : on n'affiche l'historique que s'il y a des budgets. */}
           {budgets.length > 0 && <BudgetHistory budgets={budgets} />}
 
           <section className="bg-white/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/40 mb-10">
             <TransactionFilters
-              search={search} onSearchChange={setSearch}
-              filterType={filterType} onFilterTypeChange={setFilterType}
-              startDate={startDate} onStartDateChange={setStartDate}
-              endDate={endDate} onEndDateChange={setEndDate}
-              selectedCategories={selectedCategories} onCategoryToggle={toggleCategory}
-              onResetCategories={() => setSelectedCategories([])} transactions={transactions}
+              search={search}
+              onSearchChange={setSearch}
+              filterType={filterType}
+              onFilterTypeChange={setFilterType}
+              startDate={startDate}
+              onStartDateChange={setStartDate}
+              endDate={endDate}
+              onEndDateChange={setEndDate}
+              selectedCategories={selectedCategories}
+              onCategoryToggle={toggleCategory}
+              onResetCategories={() => setSelectedCategories([])}
+              transactions={transactions}
             />
             <TransactionTable transactions={filteredTransactions} />
           </section>
         </div>
       </div>
 
-      {currentAlert && <AlertPopup key={currentAlert.id} alert={currentAlert} onClose={handleCloseAlert} />}
-      <TransactionSheet transactions={filteredTransactions} footerHeight={footerHeight} />
+      {currentAlert && (
+        <AlertPopup
+          key={currentAlert.id}
+          alert={currentAlert}
+          onClose={handleCloseAlert}
+        />
+      )}
 
-      <footer ref={footerRef} className="absolute bottom-0 left-0 w-full z-[60]">
+      <footer
+        ref={footerRef}
+        className="absolute bottom-0 left-0 w-full z-[60]"
+      >
         <Footer showIcons activeIds={["transactions", "params"]} />
       </footer>
     </main>

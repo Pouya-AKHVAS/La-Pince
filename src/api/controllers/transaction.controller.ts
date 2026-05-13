@@ -140,6 +140,24 @@ export const update = async (req: Request, res: Response) => {
       req.user.id,
       body.data,
     );
+
+    // -------------------------------------------------------------
+    // ==>>> Générer une alerte si le budget est dépassé
+    // -------------------------------------------------------------
+
+    // Trouver le budget lié à cette catégorie
+    const budget = await prisma.budget.findFirst({
+      where: {
+        userId: req.user.id,
+        id_category: updatedTransaction.categoryId,
+      },
+    });
+
+    // Générer l’alerte
+    if (budget) {
+      await generateBudgetAlert(budget.id, req.user.id);
+    }
+
     return res.status(200).json(updatedTransaction);
   } catch (error) {
     return res.status(500).json({ message: "Erreur serveur" });

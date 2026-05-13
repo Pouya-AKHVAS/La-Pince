@@ -2,9 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   fetchTransactions,
   type Transaction,
-} from "../../services/transactionApi";
-import { fetchOverview } from "../../services/statsApi";
-import type { Overview } from "../../types/stats";
+} from "../../services/transactionApi"; //Imports Transactions
 
 import Footer from "../../components/Footer/footer";
 import { AnimatedOrbBackground } from "../../components/AnimatedOrbBackground/AnimatedOrbBackground";
@@ -14,17 +12,29 @@ import BudgetCard from "../../components/CategoryCard/BudgetCard";
 import TransactionSheet from "../../components/TransactionList/TransactionSheet";
 import AlertPopup from "../../components/Alert/AlertPopup";
 import { useAlerts } from "../../hooks/useAlerts";
+import { fetchOverview } from "../../services/statsApi";
+import type { Overview } from "../../types/stats";
+import { useTransactions } from "../../hooks/useTransactions";
 
 export default function TransactionPage() {
   const { currentAlert, handleCloseAlert, loadAlerts } = useAlerts();
   const footerRef = useRef<HTMLElement>(null);
-const [footerHeight, setFooterHeight] = useState(0);
+  const [footerHeight, setFooterHeight] = useState(0);
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [overview, setOverview] = useState<Overview | null>(null);
+  const { remove, update } = useTransactions();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  type ConfirmData =
+    | { action: "delete"; payload: number }
+    | { action: "update"; payload: Transaction }
+    | null;
+
+  const [confirmData, setConfirmData] = useState<ConfirmData>(null);
+  const [editingTransaction, setEditingTransaction] =
+    useState<Transaction | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -45,7 +55,9 @@ const [footerHeight, setFooterHeight] = useState(0);
   }, [loadAlerts]);
 
   useEffect(() => {
-    load();
+    (async () => {
+      await load();
+    })();
   }, [load]);
 
   useEffect(() => {
@@ -60,7 +72,7 @@ const [footerHeight, setFooterHeight] = useState(0);
   const transactionsSorted = [...transactions].sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
   );
-  
+
   if (loading) {
     return (
       <main className="fixed inset-0 flex items-center justify-center bg-[#c8dce8]">
@@ -78,6 +90,7 @@ const [footerHeight, setFooterHeight] = useState(0);
       </main>
     );
   }
+
   return (
     <main className="fixed inset-0 w-full h-full overflow-hidden font-sans text-[#002b49]">
       <AnimatedOrbBackground />
@@ -108,9 +121,7 @@ const [footerHeight, setFooterHeight] = useState(0);
       />
 
       {/* Contenu */}
-      <div
-        className="relative z-20 flex flex-col h-full overflow-y-auto scrollbar-hide pb-40 [mask-image:linear-gradient(to_bottom,transparent_0px,transparent_145px,black_162px)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0px,transparent_145px,black_162px)] md:[mask-image:none] md:[-webkit-mask-image:none]"
-      >
+      <div className="relative z-20 flex flex-col h-full overflow-y-auto scrollbar-hide pb-40 [mask-image:linear-gradient(to_bottom,transparent_0px,transparent_145px,black_162px)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0px,transparent_145px,black_162px)] md:[mask-image:none] md:[-webkit-mask-image:none]">
         {/* En-tête Solde */}
         <header className="flex flex-col items-center pt-44 md:pt-10 pb-4 shrink-0">
           <h1 className="text-[35px] md:text-[50px] lg:text-[60px] font-black uppercase leading-none tracking-tighter">
@@ -174,10 +185,127 @@ const [footerHeight, setFooterHeight] = useState(0);
           onClose={handleCloseAlert}
         />
       )}
+
       <TransactionSheet
         transactions={transactionsSorted}
         footerHeight={footerHeight}
+        onDeleteRequest={(id) =>
+          setConfirmData({ action: "delete", payload: id })
+        }
+        onUpdateRequest={(t) => setEditingTransaction(t)}
       />
+
+      {confirmData && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[999]">
+          <div className="bg-white rounded-xl p-6 w-80 text-center shadow-xl">
+            <p className="font-bold text-lg mb-4">Êtes-vous sûr ?</p>
+
+            <p className="text-sm opacity-70 mb-6">
+              {confirmData.action === "delete"
+                ? "Voulez-vous vraiment supprimer cette transaction ?"
+                : "Voulez-vous enregistrer les modifications ?"}
+            </p>
+
+            <div className="flex justify-between gap-3">
+              <button
+                className="flex-1 py-2 rounded-lg bg-gray-300 font-bold"
+                onClick={() => setConfirmData(null)}
+              >
+                Annuler
+              </button>
+
+              <button
+                className="flex-1 py-2 rounded-lg bg-red-600 text-white font-bold"
+                onClick={async () => {
+                  if (confirmData.action === "delete") {
+                    await remove(confirmData.payload);
+                  } else if (confirmData.action === "update") {
+                    await update(confirmData.payload);
+                  }
+
+                  await load();
+                  await loadAlerts();
+
+                  setConfirmData(null);
+                }}
+              >
+                Confirmer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {editingTransaction && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[999]">
+          <div className="bg-white text-[#002b49] p-6 rounded-2xl w-[90%] max-w-[350px] shadow-xl">
+            <h2 className="text-lg font-bold mb-4">Modifier la transaction</h2>
+
+            <form
+              className="space-y-3"
+              onSubmit={(e) => {
+                e.preventDefault();
+                setConfirmData({
+                  action: "update",
+                  payload: editingTransaction,
+                });
+                setEditingTransaction(null);
+              }}
+            >
+              {/* Champ Description */}
+              <input
+                type="text"
+                defaultValue={editingTransaction.description ?? ""}
+                onChange={(e) =>
+                  setEditingTransaction((prev) =>
+                    prev ? { ...prev, description: e.target.value } : prev,
+                  )
+                }
+                className="w-full px-3 py-2 rounded bg-gray-100"
+                placeholder="Description"
+              />
+
+              {/* Champ Montant */}
+              <input
+                type="number"
+                defaultValue={editingTransaction.amount}
+                onChange={(e) =>
+                  setEditingTransaction((prev) =>
+                    prev ? { ...prev, amount: Number(e.target.value) } : prev,
+                  )
+                }
+                className="w-full px-3 py-2 rounded bg-gray-100"
+                placeholder="Montant"
+              />
+
+              {/* Bouton Enregistrer */}
+              <button
+                type="button"
+                onClick={() => {
+                  setConfirmData({
+                    action: "update",
+                    payload: editingTransaction,
+                  });
+                  setEditingTransaction(null);
+                }}
+                className="w-full bg-[#002b49] text-white py-2 rounded font-bold"
+              >
+                Enregistrer
+              </button>
+
+              {/* Bouton Annuler */}
+              <button
+                type="button"
+                onClick={() => setEditingTransaction(null)}
+                className="w-full bg-gray-300 text-[#002b49] py-2 rounded font-bold mt-2"
+              >
+                Annuler
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
       <footer
         ref={footerRef}
         className="absolute bottom-0 left-0 w-full z-[60]"
