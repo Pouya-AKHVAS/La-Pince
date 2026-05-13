@@ -58,7 +58,14 @@ export async function createTransaction(
 }
 
 export async function deleteTransactionApi(id: number) {
-  const res = await fetch(`/api/transactions/${id}`, { method: "DELETE" });
+  const res = await fetch(
+    `${import.meta.env.VITE_API_BASE_URL}/transactions/${id}`,
+    {
+      method: "DELETE",
+      credentials: "include",
+    },
+  );
+
   if (!res.ok) throw new Error("Delete failed");
 }
 
